@@ -144,7 +144,8 @@
     if (e.submitter && e.submitter.name) fd.append(e.submitter.name, e.submitter.value);
     f.classList.add("sending");
     try {
-      const r = await fetch(f.action, { method: "POST", body: fd, headers: { "x-requested-with": "fetch" }, credentials: "same-origin" });
+      // f.action would return a field named "action" (our buttons are), so read the attribute.
+      const r = await fetch(f.getAttribute("action") || location.href, { method: "POST", body: fd, headers: { "x-requested-with": "fetch" }, credentials: "same-origin" });
       if (!r.ok) {
         let msg = r.statusText;
         try { msg = (await r.json()).error || msg; } catch (_) { /* not json */ }

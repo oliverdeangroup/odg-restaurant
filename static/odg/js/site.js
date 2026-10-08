@@ -45,7 +45,7 @@
       const btn = form.querySelector(".bk-submit");
       btn.disabled = true; msg.className = "bk-msg"; msg.textContent = T.sending;
       try {
-        const r = await fetch(form.action, { method: "POST", body: new FormData(form), headers: { "x-requested-with": "fetch" } });
+        const r = await fetch(form.getAttribute("action"), { method: "POST", body: new FormData(form), headers: { "x-requested-with": "fetch" } });
         const d = await r.json();
         if (d.ok) {
           msg.className = "bk-msg ok"; msg.textContent = d.message;

@@ -1,0 +1,10 @@
+<div class="wg wg-hero h-{{ d.height }} al-{{ d.align }}{% if d.image or look.hero_image %} has-img{% endif %}" style="{% if d.image %}--img:url('{{ d.image }}');{% elif look.hero_image %}--img:url('{{ look.hero_image.url }}');{% endif %}--ov:{{ d.overlay|default:0 }}">
+  <div class="hero-text">
+    {% if d.title %}<h1>{{ d.title }}</h1>{% endif %}
+    {% if d.subtitle %}<p>{{ d.subtitle|linebreaksbr }}</p>{% endif %}
+    {% if d.button_text or d.button2_text %}<div class="hero-btns">
+      {% if d.button_text %}<a class="sbtn primary" href="{{ d.button_link|default:'#' }}">{{ d.button_text }}</a>{% endif %}
+      {% if d.button2_text %}<a class="sbtn ghost" href="{{ d.button2_link|default:'#' }}">{{ d.button2_text }}</a>{% endif %}
+    </div>{% endif %}
+  </div>
+</div>

@@ -1,0 +1,29 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "PDF report" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Finance" %} /</div>{% endblock %}
+{% block heading %}{% t "PDF report" %}{% endblock %}
+{% block content %}
+<div class="grid g3">
+  <form class="card" method="get">
+    <input type="hidden" name="period" value="day">
+    <div class="card-head"><h2>{% icon "calendar" 18 %} {% t "Day report" %}</h2></div>
+    <div class="card-body stack"><div class="field"><label>{% t "Date" %}</label><input class="inp" type="date" name="date" value="{{ ref|date:'Y-m-d' }}" required></div></div>
+    <div class="form-actions"><button class="btn" name="download" value="inline" formtarget="_blank">{% icon "eye" 15 %} {% t "View" %}</button><button class="btn primary" name="download" value="1">{% icon "download" 15 %} {% t "Download" %}</button></div>
+  </form>
+  <form class="card" method="get">
+    <input type="hidden" name="period" value="week">
+    <div class="card-head"><h2>{% icon "calendar" 18 %} {% t "Week report" %}</h2></div>
+    <div class="card-body stack"><div class="field"><label>{% t "A day in the week" %}</label><input class="inp" type="date" name="date" value="{{ ref|date:'Y-m-d' }}" required></div></div>
+    <div class="form-actions"><button class="btn" name="download" value="inline" formtarget="_blank">{% icon "eye" 15 %} {% t "View" %}</button><button class="btn primary" name="download" value="1">{% icon "download" 15 %} {% t "Download" %}</button></div>
+  </form>
+  <form class="card" method="get">
+    <input type="hidden" name="period" value="month">
+    <div class="card-head"><h2>{% icon "calendar" 18 %} {% t "Month report" %}</h2></div>
+    <div class="card-body stack"><div class="field"><label>{% t "A day in the month" %}</label><input class="inp" type="date" name="date" value="{{ ref|date:'Y-m-d' }}" required></div></div>
+    <div class="form-actions"><button class="btn" name="download" value="inline" formtarget="_blank">{% icon "eye" 15 %} {% t "View" %}</button><button class="btn primary" name="download" value="1">{% icon "download" 15 %} {% t "Download" %}</button></div>
+  </form>
+</div>
+<div class="card mt"><div class="card-body small muted">
+  {% t "The report contains the Profit & Loss, sales, payments, the OB (sales tax) summary, expenses, best sellers and the bill register. The restaurant logo is printed in the header and the contact details in the footer (Website → Brand). The CRIB and KvK numbers come from Settings → POS." %}
+</div></div>
+{% endblock %}

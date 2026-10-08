@@ -1,0 +1,52 @@
+{% comment %}Live floor plan. Positions are percentages so the plan fits every screen.{% endcomment %}
+<div class="floor-wrap">
+  <div class="floor" style="aspect-ratio:{{ s.floor_width }}/{{ s.floor_height }}">
+    {% for z in sections %}
+    <div class="zone" style="left:{{ z.x|pct:s.floor_width }}%;top:{{ z.y|pct:s.floor_height }}%;width:{{ z.w|pct:s.floor_width }}%;height:{{ z.h|pct:s.floor_height }}%;background:{{ z.color }}"><span>{{ z.name }}</span></div>
+    {% endfor %}
+    {% for st in states %}
+    <a class="ftable {{ st.t.shape }} st-{{ st.state }}" data-table="{{ st.t.pk }}"{% if not can_order %} data-modal="table-{{ st.t.pk }}"{% endif %}
+       href="{% if can_order %}{% url 'pos:order' st.t.pk %}{% else %}#table-{{ st.t.pk }}{% endif %}"
+       style="left:{{ st.t.x|pct:s.floor_width }}%;top:{{ st.t.y|pct:s.floor_height }}%;width:{{ st.t.w|pct:s.floor_width }}%;height:{{ st.t.h|pct:s.floor_height }}%;{% if st.t.rotation %}transform:rotate({{ st.t.rotation }}deg);{% endif %}"
+       title="{% t 'Table' %} {{ st.t.number }}{% if st.t.label %} · {{ st.t.label }}{% endif %}">
+      <b>{{ st.t.number }}</b>
+      {% if st.order %}<small>{{ st.order.guests }} {% t "guests" %}{% if st.order.waiter %} · {{ st.order.waiter.first_name|default:st.order.waiter.username }}{% endif %}</small>
+      {% elif st.upcoming %}<small>{{ st.upcoming.start|time:"H:i" }} · {{ st.upcoming.guests }}p</small>
+      {% else %}<small>{{ st.t.seats }} {% t "seats" %}</small>{% endif %}
+      {% if st.order %}<span class="badges">
+        {% if st.c.bar %}<span class="bdg bar" title="{% t 'Bar' %}">{% icon "glass" 9 %}{{ st.c.bar }}</span>{% endif %}
+        {% if st.c.kitchen %}<span class="bdg kitchen" title="{% t 'Kitchen' %}">{% icon "chef" 9 %}{{ st.c.kitchen }}</span>{% endif %}
+        {% if st.c.ready %}<span class="bdg ready" title="{% t 'Ready to serve' %}">{% icon "bell" 9 %}{{ st.c.ready }}</span>{% endif %}
+      </span>{% endif %}
+      {% if st.timeline %}<span class="mini-tl">{% for e in st.timeline %}<i style="left:{{ e.left }}%;width:{{ e.width }}%"></i>{% endfor %}<em style="left:{{ now_pct }}%"></em></span>{% endif %}
+    </a>
+    {% empty %}
+    <div class="empty" style="position:absolute;inset:0;display:grid;place-items:center">{% t "No tables yet." %}{% if can_design %} <a href="{% url 'pos:floor_design' %}">{% t "Design the floor" %}</a>{% endif %}</div>
+    {% endfor %}
+  </div>
+</div>
+{% if not can_order %}
+{% for st in states %}
+<div class="modal" id="table-{{ st.t.pk }}"><div class="modal-box">
+  <div class="modal-head"><h2>{% t "Table" %} {{ st.t.number }}{% if st.t.label %} · {{ st.t.label }}{% endif %}</h2><span class="pill st-{{ st.state }}">{% for k, l in legend %}{% if k == st.state %}{{ l }}{% endif %}{% endfor %}</span><button class="modal-close" type="button">{% icon "x" 18 %}</button></div>
+  <div class="modal-body stack">
+    <dl class="kv">
+      <dt>{% t "Seats" %}</dt><dd>{{ st.t.seats }}</dd>
+      {% if st.t.section %}<dt>{% t "Section" %}</dt><dd>{{ st.t.section }}</dd>{% endif %}
+      {% if st.order %}
+        <dt>{% t "Order code" %}</dt><dd>{{ st.order.code }}</dd>
+        <dt>{% t "Waiter" %}</dt><dd>{{ st.order.waiter|default:"—" }}</dd>
+        <dt>{% t "Guests" %}</dt><dd>{{ st.order.guests }}</dd>
+        <dt>{% t "Opened" %}</dt><dd>{{ st.order.opened_at|time:"H:i" }}</dd>
+        <dt>{% t "Waiting" %}</dt><dd>{{ st.c.queued }} ({% t "Bar" %} {{ st.c.bar }} · {% t "Kitchen" %} {{ st.c.kitchen }})</dd>
+        <dt>{% t "Ready to serve" %}</dt><dd>{{ st.c.ready }}</dd>
+        <dt>{% t "Served" %}</dt><dd>{{ st.c.served }}</dd>
+      {% endif %}
+    </dl>
+    {% if st.timeline %}<h3>{% t "Reservations today" %}</h3>
+    <ul class="timeline-list">{% for e in st.timeline %}<li><strong>{{ e.r.start|time:"H:i" }}</strong> {{ e.r.customer }} · {{ e.r.guests }} {% t "guests" %} <span class="pill">{{ e.r.get_status_display|tr }}</span></li>{% endfor %}</ul>{% endif %}
+  </div>
+  {% if st.order and perms.cassa %}<div class="form-actions"><a class="btn primary" href="{% url 'pos:cassa_order' st.order.pk %}">{% icon "cash" 16 %} {% t "Open in Cassa" %}</a></div>{% endif %}
+</div></div>
+{% endfor %}
+{% endif %}

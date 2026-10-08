@@ -1,0 +1,50 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Order history" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} /</div>{% endblock %}
+{% block heading %}{% t "Order history" %}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head">
+    <div class="period-nav">
+      <div class="btn-group">
+        <a href="{% qs period='day' page='' %}" class="{% if period == 'day' %}on{% endif %}">{% t "Day" %}</a>
+        <a href="{% qs period='week' page='' %}" class="{% if period == 'week' %}on{% endif %}">{% t "Week" %}</a>
+        <a href="{% qs period='month' page='' %}" class="{% if period == 'month' %}on{% endif %}">{% t "Month" %}</a>
+      </div>
+      {% if prev %}<a class="btn sm icon" href="{% qs date=prev|date:'Y-m-d' page='' %}">{% icon "left" 14 %}</a>{% endif %}
+      <span class="label">{% if period == "day" %}{{ start|fdate }}{% else %}{{ start|fdate }} – {{ end|fdate }}{% endif %}</span>
+      {% if next %}<a class="btn sm icon" href="{% qs date=next|date:'Y-m-d' page='' %}">{% icon "right" 14 %}</a>{% endif %}
+      <form method="get" class="filters">
+        <input type="hidden" name="period" value="{{ period }}">
+        <input class="inp" type="date" name="date" value="{{ ref|date:'Y-m-d' }}" min="{{ limit|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" onchange="this.form.submit()">
+        <div class="search">{% icon "search" 16 %}<input class="inp" name="q" value="{{ q }}" placeholder="{% t 'Order code, bill no., table or customer' %}"></div>
+        <select class="inp" name="status" onchange="this.form.submit()"><option value="">{% t "All" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if status == v %}selected{% endif %}>{{ l|tr }}</option>{% endfor %}</select>
+        <button class="btn">{% t "Filter" %}</button>
+      </form>
+    </div>
+    <span class="muted small">{% t "History of the last {0} days" days %}</span>
+  </div>
+  <div class="card-body tight table-wrap">
+    <table class="tbl">
+      <thead><tr><th>{% t "Order code" %}</th><th>{% t "Table" %}</th><th>{% t "Opened" %}</th><th>{% t "Closed" %}</th><th>{% t "Waiter" %}</th><th>{% t "Customer" %}</th><th>{% t "Status" %}</th><th>{% t "Bill no." %}</th><th class="right">{% t "Total" %}</th></tr></thead>
+      <tbody>
+      {% for o in page %}
+      <tr>
+        <td><a href="{% url 'pos:history_order' o.pk %}"><strong>{{ o.code }}</strong></a></td>
+        <td>#{{ o.table_number }} <small class="muted">{{ o.guests }}p</small></td>
+        <td class="small nowrap">{{ o.opened_at|fdatetime }}</td>
+        <td class="small nowrap">{{ o.closed_at|time:"H:i"|default:"—" }}</td>
+        <td class="small">{{ o.waiter|default:"—" }}</td>
+        <td class="small">{% if o.customer %}{{ o.customer }}{% endif %}</td>
+        <td><span class="pill {% if o.status == 'paid' %}ok{% elif o.status == 'void' %}err{% else %}st-busy{% endif %}">{{ o.get_status_display|tr }}</span></td>
+        <td class="small">{{ o.bill_number }}</td>
+        <td class="right money">{% if o.status == "paid" %}{{ o.total|money }}{% if o.tip %}<br><small class="muted">+ {{ o.tip|money }}</small>{% endif %}{% endif %}</td>
+      </tr>
+      {% empty %}<tr><td colspan="9" class="empty">{% t "No orders in this period." %}</td></tr>{% endfor %}
+      </tbody>
+      {% if totals.t %}<tfoot><tr><td colspan="8" class="right"><strong>{% t "Total paid" %}</strong></td><td class="right money"><strong>{{ totals.t|money }}</strong>{% if totals.tip %}<br><small class="muted">+ {{ totals.tip|money }} {% t "tips" %}</small>{% endif %}</td></tr></tfoot>{% endif %}
+    </table>
+  </div>
+  {% include "core/_pager.html" %}
+</div>
+{% endblock %}

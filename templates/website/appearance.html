@@ -1,0 +1,91 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Appearance" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Website" %} /</div>{% endblock %}
+{% block heading %}{% t "Appearance" %}{% endblock %}
+{% block actions %}<a class="btn" href="{% url 'website:footer' %}">{% icon "columns" 16 %} {% t "Footer builder" %}</a><a class="btn" href="/" target="_blank">{% icon "eye" 16 %} {% t "View website" %}</a>{% endblock %}
+{% block content %}
+<div class="card mb">
+  <div class="card-head"><h2>{% icon "layers" 18 %} {% t "Themes" %}</h2><span class="muted small">{% t "A theme only changes the look and structure. Your pages, menus and data stay the same." %}</span></div>
+  <div class="card-body theme-grid">
+    {% for key, label, desc, defaults in themes %}
+    <form method="post" class="theme-card {% if obj.theme == key %}active{% endif %}">
+      {% csrf_token %}<input type="hidden" name="action" value="theme"><input type="hidden" name="theme" value="{{ key }}">
+      <div class="theme-prev tp-{{ key }}" style="--p:{{ defaults.primary_color }};--s:{{ defaults.secondary_color }};--a:{{ defaults.accent_color }};--bg:{{ defaults.background_color }};--tx:{{ defaults.text_color }}">
+        <i class="tp-top"></i><i class="tp-head"></i><i class="tp-hero"></i><i class="tp-side"></i><i class="tp-c1"></i><i class="tp-c2"></i><i class="tp-c3"></i><i class="tp-foot"></i>
+      </div>
+      <div class="theme-info">
+        <div><strong>{{ label|tr }}</strong><small>{{ desc|tr }}</small></div>
+        {% if obj.theme == key %}<span class="pill ok">{% icon "check" 12 %} {% t "Active" %}</span>{% else %}<span class="row" style="gap:4px;flex-wrap:nowrap"><button class="btn sm primary">{% t "Activate" %}</button></span>{% endif %}
+      </div>
+      <label class="small muted" style="display:flex;gap:6px;padding:0 14px 12px"><input type="checkbox" name="colors" value="1" class="chk" {% if obj.theme != key %}checked{% endif %}> {% t "Also use the colours and fonts of this theme" %}</label>
+      {% if obj.theme == key %}<div style="padding:0 14px 12px"><button class="btn sm" name="colors" value="1">{% icon "refresh" 13 %} {% t "Reset to the theme colours" %}</button></div>{% endif %}
+    </form>
+    {% endfor %}
+  </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}<input type="hidden" name="action" value="appearance">
+  <input type="hidden" name="theme" value="{{ obj.theme }}">
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head"><h2>{% icon "palette" 18 %} {% t "Colors" %}</h2></div>
+      <div class="card-body form-grid g3">
+        {% include "core/_field.html" with f=form.primary_color %}
+        {% include "core/_field.html" with f=form.secondary_color %}
+        {% include "core/_field.html" with f=form.accent_color %}
+        {% include "core/_field.html" with f=form.background_color %}
+        {% include "core/_field.html" with f=form.text_color %}
+        {% include "core/_field.html" with f=form.radius %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Aa {% t "Fonts" %}</h2></div>
+      <div class="card-body form-grid">
+        {% include "core/_field.html" with f=form.heading_font %}
+        {% include "core/_field.html" with f=form.body_font %}
+        {% include "core/_field.html" with f=form.base_font_size %}
+      </div>
+    </div>
+  </div>
+  <div class="card mt">
+    <div class="card-head"><h2>{% icon "image" 18 %} {% t "Hero banner" %}</h2><span class="muted small">{% t "Shown on the homepage and on pages with the Landing template. In the builder you can also add a Hero banner widget anywhere." %}</span></div>
+    <div class="card-body form-grid">
+      {% include "core/_field.html" with f=form.hero_enabled cls="full" %}
+      {% include "core/_field.html" with f=form.hero_title %}
+      {% include "core/_field.html" with f=form.hero_subtitle %}
+      {% include "core/_field.html" with f=form.hero_button_text %}
+      {% include "core/_field.html" with f=form.hero_button_link %}
+      {% include "core/_field.html" with f=form.hero_image %}
+      {% include "core/_field.html" with f=form.hero_overlay %}
+      {% if obj.hero_image %}<div class="full"><img src="{{ obj.hero_image.url }}" alt="" style="max-height:160px;border-radius:10px"></div>{% endif %}
+    </div>
+  </div>
+  <div class="grid g2 mt">
+    <div class="card">
+      <div class="card-head"><h2>{% t "Header builder" %}</h2></div>
+      <div class="card-body form-grid">
+        {% include "core/_field.html" with f=form.header_layout cls="full" %}
+        {% include "core/_field.html" with f=form.header_sticky cls="full" %}
+        {% include "core/_field.html" with f=form.header_topbar cls="full" %}
+        {% include "core/_field.html" with f=form.header_cta_text %}
+        {% include "core/_field.html" with f=form.header_cta_link %}
+        <p class="muted small full" style="margin:0">{% t "The menu items come from Website → Menu, the logo from Website → Brand." %}</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>{% t "Footer" %}</h2><a class="btn sm primary" href="{% url 'website:footer' %}">{% icon "columns" 14 %} {% t "Open the footer builder" %}</a></div>
+      <div class="card-body form-grid">
+        {% include "core/_field.html" with f=form.footer_text cls="full" %}
+        {% include "core/_field.html" with f=form.footer_show_social %}
+        {% include "core/_field.html" with f=form.footer_show_powered %}
+      </div>
+    </div>
+  </div>
+  <div class="card mt">
+    <div class="card-head"><h2>{% t "Extra CSS" %}</h2><span class="muted small">{% t "For advanced users" %}</span></div>
+    <div class="card-body">{% include "core/_field.html" with f=form.custom_css %}</div>
+    <div class="form-actions"><button class="btn primary">{% icon "check" 16 %} {% t "Save appearance" %}</button></div>
+  </div>
+</form>
+{% endblock %}

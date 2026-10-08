@@ -1,0 +1,7 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Take orders" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} /</div>{% endblock %}
+{% block heading %}{% t "Take orders" %}{% endblock %}
+{% block content %}
+<div data-live-src="{% url 'pos:tables' %}?partial=1">{% include "pos/_tables.html" %}</div>
+{% endblock %}

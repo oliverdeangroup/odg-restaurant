@@ -1,0 +1,10 @@
+{% if f.is_hidden %}{{ f }}{% elif f.widget_type == "checkbox" %}
+<div class="field check {{ cls }}">{{ f }}<div><label for="{{ f.id_for_label }}">{{ f.label|tr }}</label>{% if f.help_text %}<div class="help">{{ f.help_text|tr }}</div>{% endif %}{% for e in f.errors %}<div class="err">{{ e }}</div>{% endfor %}</div></div>
+{% else %}
+<div class="field {{ cls }}">
+  <label for="{{ f.id_for_label }}">{{ f.label|tr }}{% if f.field.required %} <span style="color:var(--red)">*</span>{% endif %}</label>
+  {{ f }}
+  {% if f.help_text %}<div class="help">{{ f.help_text|tr }}</div>{% endif %}
+  {% for e in f.errors %}<div class="err">{{ e }}</div>{% endfor %}
+</div>
+{% endif %}

@@ -1,0 +1,45 @@
+{% extends "core/base_dashboard.html" %}{% load static %}
+{% block title %}{% t "Design the floor" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} / <a href="{% url 'pos:floor' %}">{% t "Floor manager" %}</a> /</div>{% endblock %}
+{% block heading %}{% t "Design the floor" %}{% endblock %}
+{% block actions %}
+<a class="btn" href="{% url 'pos:floor' %}">{% t "Back" %}</a>
+<button class="btn primary" type="button" id="fd-save">{% icon "check" 16 %} {% t "Save layout" %}</button>
+{% endblock %}
+{% block content %}
+<div class="card mb"><div class="card-body row" style="padding:10px 14px">
+  <button class="btn sm" type="button" data-add="rect">{% icon "plus" 14 %} {% t "Rectangle table" %}</button>
+  <button class="btn sm" type="button" data-add="round">{% icon "plus" 14 %} {% t "Round table" %}</button>
+  <button class="btn sm" type="button" data-add="section">{% icon "plus" 14 %} {% t "Section" %}</button>
+  <span style="flex:1"></span>
+  <button class="btn sm icon" type="button" data-zoom="-1" title="{% t 'Zoom out' %}">−</button>
+  <span class="small muted" id="fd-zoom">100%</span>
+  <button class="btn sm icon" type="button" data-zoom="1" title="{% t 'Zoom in' %}">+</button>
+</div></div>
+<div class="designer">
+  <div class="design-canvas" id="fd-canvas"><div class="design-floor" id="fd-floor"></div></div>
+  <div class="card">
+    <div class="card-head"><h3 id="fd-title">{% t "Properties" %}</h3></div>
+    <div class="card-body stack" id="fd-props">
+      <p class="muted small mt0">{% t "Drag tables and sections to move them. Drag the blue corner to resize. Click an item to change it." %}</p>
+    </div>
+  </div>
+</div>
+{{ data|json_script:"floor-data" }}
+{% endblock %}
+{% block scripts %}
+<script>
+window.FLOOR = {
+  save: "{% url 'pos:floor_save' %}", back: "{% url 'pos:floor' %}",
+  t: {
+    table: {% tjs "Table" %}, number: {% tjs "Number" %}, label: {% tjs "Name (optional)" %}, seats: {% tjs "Seats" %},
+    shape: {% tjs "Shape" %}, rect: {% tjs "Rectangle" %}, round: {% tjs "Round" %}, section: {% tjs "Section" %},
+    none: {% tjs "No section" %}, width: {% tjs "Width" %}, height: {% tjs "Height" %}, rotation: {% tjs "Rotation" %},
+    online: {% tjs "Can be booked online" %}, del: {% tjs "Remove" %}, name: {% tjs "Name" %}, color: {% tjs "Colour" %},
+    busy: {% tjs "This table has an open order and cannot be removed now." %}, saved: {% tjs "Layout saved." %},
+    seatsShort: {% tjs "seats" %}, unsaved: {% tjs "You have unsaved changes." %}
+  }
+};
+</script>
+<script src="{% static 'odg/js/floor-design.js' %}?v={{ odg_version }}"></script>
+{% endblock %}

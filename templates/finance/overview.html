@@ -1,0 +1,83 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Finance" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Finance" %} /</div>{% endblock %}
+{% block heading %}{% t "Profit & Loss" %}{% endblock %}
+{% block actions %}
+<a class="btn" href="{% url 'finance:report' %}?period={{ period }}&date={{ ref|date:'Y-m-d' }}&download=inline" target="_blank">{% icon "file" 16 %} PDF</a>
+<div class="dd"><button class="btn" type="button" data-dd>{% icon "download" 16 %} {% t "Export" %} {% icon "down" 14 %}</button>
+  <div class="dd-menu"><a href="{% url 'finance:export' %}?what=sales&period={{ period }}&date={{ ref|date:'Y-m-d' }}">{% t "Bill register (CSV)" %}</a><a href="{% url 'finance:export' %}?what=expenses&period={{ period }}&date={{ ref|date:'Y-m-d' }}">{% t "Expenses (CSV)" %}</a></div></div>
+<a class="btn primary" href="{% url 'finance:expense_new' %}">{% icon "plus" 16 %} {% t "Expense" %}</a>
+{% endblock %}
+{% block content %}
+<div class="card mb"><div class="card-head">{% include "finance/_period.html" %}<span class="muted small">{% t "Amounts in" %} {{ s.currency_code }}</span></div></div>
+
+<div class="grid g4 mb">
+  <div class="card stat"><span class="ico green">{% icon "cash" 22 %}</span><div><div class="num">{{ gross|money }}</div><div class="lbl">{% t "Gross sales (incl. {0})" s.tax_name %}</div></div></div>
+  <div class="card stat"><span class="ico">{% icon "chart" 22 %}</span><div><div class="num">{{ net_revenue|money }}</div><div class="lbl">{% t "Net revenue" %}</div></div></div>
+  <div class="card stat"><span class="ico red">{% icon "receipt" 22 %}</span><div><div class="num">{{ expenses_net|money }}</div><div class="lbl">{% t "Expenses (excl. {0})" s.tax_name %}</div></div></div>
+  <div class="card stat"><span class="ico gold">{% icon "award" 22 %}</span><div><div class="num {% if profit < 0 %}neg{% endif %}">{{ profit|money }}</div><div class="lbl">{% t "Result before profit tax" %}</div></div></div>
+</div>
+
+<div class="grid g-side">
+  <div>
+    <div class="card">
+      <div class="card-head"><h2>{% icon "chart" 18 %} {% t "Sales" %}</h2><span class="muted small">{{ payments }} {% t "bills" %} · {{ orders }} {% t "tables" %} · {{ guests }} {% t "guests" %}</span></div>
+      <div class="card-body"><div class="bars tall">{% for d in chart %}<div class="b" title="{{ d.d|fdate }}: {{ d.v|money }}"><i style="height:{{ d.pct }}%"></i><small>{% if period == "year" %}{{ d.d|date:"M"|tr|slice:":3" }}{% elif period == "month" %}{{ d.d|date:"j" }}{% else %}{{ d.d|date:"D"|tr|slice:":2" }}{% endif %}</small></div>{% endfor %}</div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <div class="card-head"><h3>{% t "Profit & Loss" %}</h3></div>
+        <div class="card-body"><table class="sum-table">
+          <tr><td>{% t "Gross sales (incl. {0})" s.tax_name %}</td><td>{{ gross|money }}</td></tr>
+          <tr><td>− {% t "{0} collected" s.tax_name %}</td><td>{{ tax|money }}</td></tr>
+          <tr><td><strong>{% t "Net revenue" %}</strong></td><td><strong>{{ net_revenue|money }}</strong></td></tr>
+          <tr><td>− {% t "Expenses (excl. {0})" s.tax_name %}</td><td>{{ expenses_net|money }}</td></tr>
+          <tr class="grand"><td>{% t "Result" %}</td><td class="{% if profit < 0 %}neg{% endif %}">{{ profit|money }}</td></tr>
+        </table></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>{% t "{0} (sales tax)" s.tax_name %}</h3></div>
+        <div class="card-body"><table class="sum-table">
+          <tr><td>{% t "On sales" %} ({{ s.tax_rate }}%)</td><td>{{ tax|money }}</td></tr>
+          <tr><td>− {% t "Paid on expenses" %}</td><td>{{ expenses_tax|money }}</td></tr>
+          <tr class="grand"><td>{% t "To declare" %}</td><td>{{ tax_payable|money }}</td></tr>
+        </table><p class="muted small">{% t "Use the monthly figures for your OB return to the Tax Office (Inspectie der Belastingen)." %}</p></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>{% icon "award" 16 %} {% t "Best sellers" %}</h3></div>
+      <div class="card-body tight"><table class="tbl"><thead><tr><th>{% t "Product" %}</th><th class="right">{% t "Qty" %}</th><th class="right">{% t "Amount" %}</th></tr></thead><tbody>
+        {% for r in top %}<tr><td>{{ r.name }}</td><td class="right">{{ r.n }}</td><td class="right money">{{ r.amount|money }}</td></tr>{% empty %}<tr><td colspan="3" class="empty">{% t "No sales in this period." %}</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+  </div>
+  <div>
+    <div class="card">
+      <div class="card-head"><h3>{% t "Payments" %}</h3></div>
+      <div class="card-body"><table class="sum-table">
+        {% for m in methods.values %}<tr><td>{{ m.label|tr }} <small class="muted">({{ m.n }})</small></td><td>{{ m.amount|money }}</td></tr>{% endfor %}
+        <tr><td>{% t "Tips (for staff)" %}</td><td>{{ tips|money }}</td></tr>
+        <tr><td>{% t "Discounts given" %}</td><td>{{ discounts|money }}</td></tr>
+        {% if service %}<tr><td>{% t "Service charge" %}</td><td>{{ service|money }}</td></tr>{% endif %}
+        <tr><td>{% t "Average per table" %}</td><td>{{ avg_ticket|money }}</td></tr>
+        <tr><td>{% t "Average per guest" %}</td><td>{{ per_guest|money }}</td></tr>
+        <tr><td>{% t "Cancelled orders" %}</td><td>{{ voided }}</td></tr>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>{% t "Sales per station" %}</h3></div>
+      <div class="card-body"><table class="sum-table">
+        <tr><td>{% icon "glass" 14 %} {% t "Bar" %}</td><td>{{ stations.bar|default:0|money }}</td></tr>
+        <tr><td>{% icon "chef" 14 %} {% t "Kitchen" %}</td><td>{{ stations.kitchen|default:0|money }}</td></tr>
+        {% if stations.none %}<tr><td>{% t "No preparation" %}</td><td>{{ stations.none|money }}</td></tr>{% endif %}
+      </table><p class="muted small">{% t "Before discounts, including OB." %}</p></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>{% t "Expenses" %}</h3><a class="small" href="{% url 'finance:expenses' %}?period={{ period }}&date={{ ref|date:'Y-m-d' }}">{% t "All" %}</a></div>
+      <div class="card-body"><table class="sum-table">
+        {% for c in by_cat.values %}<tr><td>{{ c.label|tr }}</td><td>{{ c.amount|money }}</td></tr>{% empty %}<tr><td class="muted">{% t "No expenses in this period." %}</td><td></td></tr>{% endfor %}
+      </table></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% if obj.pk %}{{ obj }}{% else %}{% t "New" %}{% endif %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Users" %} / <a href="{% url 'core:users_'|add:kind %}">{{ cfg.title|tr }}</a> /</div>{% endblock %}
+{% block heading %}{% if obj.pk %}{{ obj }}{% else %}{% t "Add user" %}{% endif %}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+  <div class="card">
+    <div class="card-head"><h2>{% t "Personal details" %}</h2></div>
+    <div class="card-body form-grid">
+      {% if form.non_field_errors %}<ul class="errorlist full">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      {% if form.role %}{% include "core/_field.html" with f=form.role cls="full" %}
+      <p class="muted small full" style="margin:-6px 0 0">{% if kind == "staff" %}{% t "Owner: only 1. Manager: the maximum is set in Settings. Waiters, bartenders and chefs: no limit." %}{% else %}{% t "Administrators have full rights. Moderators can do everything except updates, system users and system settings." %}{% endif %}</p>{% endif %}
+      {% include "core/_field.html" with f=form.first_name %}
+      {% include "core/_field.html" with f=form.last_name %}
+      {% include "core/_field.html" with f=form.phone %}
+      {% include "core/_field.html" with f=form.email %}
+      {% include "core/_field.html" with f=form.birthdate %}
+      {% include "core/_field.html" with f=form.id_number %}
+      {% include "core/_field.html" with f=form.address cls="full" %}
+      {% include "core/_field.html" with f=form.photo cls="full" %}
+      <div class="section-title">{% t "Login" %}</div>
+      {% include "core/_field.html" with f=form.username %}
+      {% include "core/_field.html" with f=form.password %}
+      {% include "core/_field.html" with f=form.language %}
+      {% include "core/_field.html" with f=form.is_active %}
+    </div>
+    <div class="form-actions">
+      <a class="btn" href="{% url 'core:users_'|add:kind %}">{% t "Cancel" %}</a>
+      <button class="btn primary">{% icon "check" 16 %} {% t "Save" %}</button>
+    </div>
+  </div>
+</form>
+{% endblock %}

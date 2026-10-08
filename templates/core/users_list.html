@@ -1,0 +1,80 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{{ cfg.title|tr }}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Users" %} /</div>{% endblock %}
+{% block heading %}{{ cfg.title|tr }}{% endblock %}
+{% block actions %}
+{% if kind == "staff" %}
+<div class="dd"><button class="btn primary" type="button" data-dd>{% icon "plus" 16 %} {% t "Add user" %} {% icon "down" 14 %}</button>
+  <div class="dd-menu">{% for v, l in role_choices %}<a href="{% url 'core:user_new' kind %}?role={{ v }}">{% icon "user" 15 %} {% t "Add" %} {{ l|tr|lower }}</a>{% endfor %}</div>
+</div>
+{% else %}<a class="btn primary" href="{% url 'core:user_new' kind %}">{% icon "plus" 16 %} {% t "Add administrator / moderator" %}</a>{% endif %}
+{% endblock %}
+{% block content %}
+{% if kind == "staff" %}
+<div class="role-chips mb">
+  <a class="chip {% if not role %}on{% endif %}" href="?status={{ status }}">{% t "All roles" %}</a>
+  {% for v, l, n in counts.by_role %}<a class="chip {% if role == v %}on{% endif %}" href="?role={{ v }}&status={{ status }}">{{ l|tr }} <b>{{ n }}{% if v == "owner" %}/1{% elif v == "manager" %}/{{ counts.max_managers }}{% endif %}</b></a>{% endfor %}
+</div>
+{% endif %}
+<div class="card">
+  <div class="card-head">
+    <form class="filters" method="get">
+      <div class="search">{% icon "search" 16 %}<input class="inp" name="q" value="{{ q }}" placeholder="{% t 'Name, username, e-mail or ID' %}"></div>
+      {% if role_choices %}<select class="inp" name="role" onchange="this.form.submit()"><option value="">{% t "All roles" %}</option>{% for v, l in role_choices %}<option value="{{ v }}" {% if request.GET.role == v %}selected{% endif %}>{{ l|tr }}</option>{% endfor %}</select>{% endif %}
+      <select class="inp" name="status" onchange="this.form.submit()">
+        <option value="active" {% if status == "active" %}selected{% endif %}>{% t "Active" %}</option>
+        <option value="inactive" {% if status == "inactive" %}selected{% endif %}>{% t "Inactive" %}</option>
+        <option value="all" {% if status == "all" %}selected{% endif %}>{% t "All" %}</option>
+      </select>
+      <button class="btn">{% t "Filter" %}</button>
+    </form>
+  </div>
+  <div class="card-body tight table-wrap">
+    <table class="tbl">
+      <thead><tr><th>{% t "Name" %}</th><th>{% t "Role" %}</th><th>{% t "Contact" %}</th><th>{% t "Last login" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for u in page %}
+        <tr>
+          <td><a href="{% url 'core:user_edit' kind u.pk %}" class="person" style="color:inherit"><span class="avatar">{% if u.photo %}<img src="{{ u.photo_url }}" alt="">{% else %}{{ u.initials }}{% endif %}</span><div><strong>{{ u }}</strong>{% if not u.is_active %} <span class="pill err">{% t "Inactive" %}</span>{% endif %}<small>{{ u.username }}</small></div></a></td>
+          <td><span class="pill role-{{ u.role }}">{% if u.is_superuser and u.role != "admin" %}{% t "Administrator" %}{% else %}{{ u.get_role_display|tr }}{% endif %}</span></td>
+          <td class="small">{{ u.email|default:"" }}{% if u.phone %}<br><span class="muted">{{ u.phone }}</span>{% endif %}</td>
+          <td class="small muted nowrap">{% if u.last_login %}{{ u.last_login|timesince }}{% else %}{% t "Never" %}{% endif %}</td>
+          <td class="actions">
+            <a class="btn sm" href="{% url 'core:user_edit' kind u.pk %}">{% icon "edit" 14 %} {% t "Edit" %}</a>
+            {% if u != user %}
+            <div class="dd" style="display:inline-block">
+              <button class="btn sm icon" type="button" data-dd>{% icon "down" 14 %}</button>
+              <div class="dd-menu">
+                <form method="post" action="{% url 'core:user_action' kind u.pk %}">{% csrf_token %}<input type="hidden" name="action" value="reset"><button class="btn ghost" style="width:100%;justify-content:flex-start" data-confirm="{% t 'Create a new temporary password?' %}">{% icon "key" 15 %} {% t "Reset password" %}</button></form>
+                <form method="post" action="{% url 'core:user_action' kind u.pk %}">{% csrf_token %}<input type="hidden" name="action" value="toggle"><button class="btn ghost" style="width:100%;justify-content:flex-start">{% icon "lock" 15 %} {% if u.is_active %}{% t "Deactivate" %}{% else %}{% t "Activate" %}{% endif %}</button></form>
+                {% if user.is_admin %}<button class="btn ghost danger" style="width:100%;justify-content:flex-start" type="button" data-modal="del-user" data-fill='{"confirm":"","username_label":"{{ u.username|escapejs }}","action_url":"{% url 'core:user_action' kind u.pk %}"}'>{% icon "trash" 15 %} {% t "Delete" %}</button>{% endif %}
+              </div>
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7" class="empty">{% icon "users" 36 %}<p>{% t "No users found." %}</p></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "core/_pager.html" %}
+</div>
+
+<div class="modal" id="del-user"><div class="modal-box">
+  <form method="post" id="del-user-form">{% csrf_token %}
+    <div class="modal-head"><h2>{% t "Delete user" %}</h2><button class="modal-close" type="button">{% icon "x" 18 %}</button></div>
+    <div class="modal-body stack">
+      <div class="alert error">{% t "Deleting removes this account and everything linked to it. Deactivating is usually better." %}</div>
+      <p>{% t "Type the username to confirm" %}: <strong data-fill="username_label"></strong></p>
+      <input type="hidden" name="action" value="delete"><input type="hidden" name="action_url">
+      <input class="inp" name="confirm" autocomplete="off">
+    </div>
+    <div class="form-actions"><button class="btn danger">{% icon "trash" 15 %} {% t "Delete" %}</button></div>
+  </form>
+</div></div>
+<script>
+document.getElementById("del-user-form").addEventListener("submit", function () { this.action = this.querySelector("[name=action_url]").value; });
+</script>
+{% endblock %}

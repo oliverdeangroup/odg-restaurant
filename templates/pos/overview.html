@@ -1,0 +1,12 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Live overview" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} /</div>{% endblock %}
+{% block heading %}{% t "Live overview" %}{% endblock %}
+{% block actions %}
+{% if perms.pos_bar %}<a class="btn" href="{% url 'pos:bar' %}">{% icon "glass" 16 %} {% t "Bar" %}</a>{% endif %}
+{% if perms.pos_kitchen %}<a class="btn" href="{% url 'pos:kitchen' %}">{% icon "chef" 16 %} {% t "Kitchen" %}</a>{% endif %}
+<a class="btn" href="{% url 'pos:floor' %}">{% icon "grid" 16 %} {% t "Floor" %}</a>
+{% endblock %}
+{% block content %}
+<div data-live-src="{% url 'pos:overview' %}?partial=1">{% include "pos/_overview.html" %}</div>
+{% endblock %}

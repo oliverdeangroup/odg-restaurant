@@ -1,0 +1,73 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Products" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} /</div>{% endblock %}
+{% block heading %}{% t "Products" %}{% endblock %}
+{% block actions %}
+<button class="btn" type="button" data-modal="cat-modal" data-fill='{"c-name":"","c-parent":"{{ cat|default:'' }}","c-station":"","c-order":"0","c-active":true,"c-show_on_website":true,"pk":""}'>{% icon "plus" 16 %} {% t "Category" %}</button>
+<a class="btn primary" href="{% url 'pos:product_new' %}{% if cat %}?cat={{ cat }}{% endif %}">{% icon "plus" 16 %} {% t "Add product" %}</a>
+{% endblock %}
+{% block content %}
+<div class="grid" style="grid-template-columns:280px minmax(0,1fr)">
+  <div class="card">
+    <div class="card-head"><h3>{% t "Categories" %}</h3></div>
+    <div class="cat-tree">
+      <a href="{% url 'pos:products' %}" class="{% if not cat %}on{% endif %}"><span>{% t "All products" %}</span><span class="n">{{ products|length }}</span></a>
+      {% for c in tree %}
+      <a href="?cat={{ c.pk }}" class="{% if cat == c.pk|stringformat:'s' %}on{% endif %}" style="padding-left:{{ c.level|add:1 }}4px">
+        <span>{% if c.level %}<span class="muted">{% for i in "x"|rjust:c.level %}·{% endfor %}</span> {% endif %}{{ c.name }}{% if c.station %} <span class="pill {{ c.station }}" style="font-size:10px">{{ c.get_station_display|tr }}</span>{% endif %}{% if not c.active %} <span class="pill err" style="font-size:10px">{% t "Off" %}</span>{% endif %}</span>
+        <span class="n">{{ c.n }}</span>
+      </a>
+      {% empty %}<p class="muted pad">{% t "No categories yet." %}</p>{% endfor %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <form class="filters" method="get">{% if cat %}<input type="hidden" name="cat" value="{{ cat }}">{% endif %}
+        <div class="search">{% icon "search" 16 %}<input class="inp" name="q" value="{{ q }}" placeholder="{% t 'Name or code' %}"></div><button class="btn">{% t "Search" %}</button></form>
+      {% for c in tree %}{% if cat == c.pk|stringformat:'s' %}
+      <span class="row">
+        <strong>{{ c.path }}</strong>
+        <button class="btn sm" type="button" data-modal="cat-modal" data-fill='{"c-name":"{{ c.name|escapejs }}","c-parent":"{{ c.parent_id|default:'' }}","c-station":"{{ c.station }}","c-order":"{{ c.order }}","c-active":{% if c.active %}true{% else %}false{% endif %},"c-show_on_website":{% if c.show_on_website %}true{% else %}false{% endif %},"pk":"{{ c.pk }}"}'>{% icon "edit" 13 %} {% t "Edit category" %}</button>
+        <form method="post" class="inline" data-confirm="{% t 'Delete this category?' %}">{% csrf_token %}<input type="hidden" name="action" value="category_delete"><input type="hidden" name="pk" value="{{ c.pk }}"><button class="btn sm icon danger">{% icon "trash" 13 %}</button></form>
+      </span>{% endif %}{% endfor %}
+    </div>
+    <div class="card-body tight table-wrap">
+      <table class="tbl">
+        <thead><tr><th>{% t "Product" %}</th><th>{% t "Category" %}</th><th>{% t "Station" %}</th><th>{% t "Prep." %}</th><th class="right">{% t "Price" %}</th><th>{% t "Available" %}</th><th></th></tr></thead>
+        <tbody>{% for p in products %}
+          <tr {% if not p.active %}style="opacity:.5"{% endif %}>
+            <td><div class="row" style="flex-wrap:nowrap">{% if p.image %}<img class="prod-thumb" src="{{ p.image.url }}" alt="">{% else %}<span class="prod-thumb">{% icon "image" 16 %}</span>{% endif %}
+              <div><strong>{{ p.name }}</strong>{% if p.code %} <small class="muted">{{ p.code }}</small>{% endif %}{% if p.options_text %}<br><small class="muted">{% for g in p.options %}{{ g.name }}{% if not forloop.last %} · {% endif %}{% endfor %}</small>{% endif %}{% if not p.active %} <span class="pill err">{% t "Not on the menu" %}</span>{% endif %}</div></div></td>
+            <td class="small">{{ p.category.path }}</td>
+            <td><span class="pill {{ p.resolved_station }}">{% if p.resolved_station == "bar" %}{% t "Bar" %}{% elif p.resolved_station == "kitchen" %}{% t "Kitchen" %}{% else %}{% t "No preparation" %}{% endif %}</span></td>
+            <td class="small">{{ p.prep_minutes }} min</td>
+            <td class="right money">{{ p.price|money }}</td>
+            <td><form method="post" data-ajax-toggle>{% csrf_token %}<input type="hidden" name="action" value="toggle"><input type="hidden" name="pk" value="{{ p.pk }}"><label class="switch" title="{% t 'Untick when sold out' %}"><input type="checkbox" {% if p.available %}checked{% endif %} onchange="this.form.requestSubmit ? this.form.requestSubmit() : this.form.submit()"><span></span></label></form></td>
+            <td class="actions"><a class="btn sm" href="{% url 'pos:product_edit' p.pk %}">{% icon "edit" 14 %} {% t "Edit" %}</a></td>
+          </tr>
+        {% empty %}<tr><td colspan="7" class="empty">{% icon "list" 36 %}<p>{% t "No products here yet." %}</p></td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="cat-modal"><div class="modal-box">
+  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="category"><input type="hidden" name="pk">
+    <div class="modal-head"><h2>{% t "Category" %}</h2><button class="modal-close" type="button">{% icon "x" 18 %}</button></div>
+    <div class="modal-body form-grid">{% include "core/_form.html" with form=cform %}
+      <p class="muted small full" style="margin:0">{% t "Example: Beverages → Alcohol → Cocktails. Set the station (Bar or Kitchen) on the top category; sub-categories follow it." %}</p></div>
+    <div class="form-actions"><button class="btn primary">{% t "Save" %}</button></div>
+  </form>
+</div></div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll("form[data-ajax-toggle]").forEach(function (f) {
+  f.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    await fetch(location.pathname + location.search, {method: "POST", body: new FormData(f), headers: {"x-requested-with": "fetch"}});
+  });
+});
+{% if cform.errors %}window.odgOpenModal("cat-modal");{% endif %}
+</script>
+{% endblock %}

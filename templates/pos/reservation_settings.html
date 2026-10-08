@@ -1,0 +1,40 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Reservation rules" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Settings" %} /</div>{% endblock %}
+{% block heading %}{% t "Reservation rules" %}{% endblock %}
+{% block content %}
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head"><h2>{% icon "calendar" 18 %} {% t "Online reservations" %}</h2></div>
+      <div class="card-body form-grid">
+        {% include "core/_field.html" with f=form.online_reservations cls="full" %}
+        {% include "core/_field.html" with f=form.slot_minutes %}
+        {% include "core/_field.html" with f=form.dining_minutes %}
+        {% include "core/_field.html" with f=form.min_hours_ahead %}
+        {% include "core/_field.html" with f=form.max_days_ahead %}
+        {% include "core/_field.html" with f=form.max_guests_online %}
+        {% include "core/_field.html" with f=form.no_show_minutes %}
+        {% include "core/_field.html" with f=form.auto_confirm cls="full" %}
+        <p class="muted small full" style="margin:0">{% t "A table that is occupied stays unavailable until Cassa marks it Paid / Checkout. Tables can be excluded from online booking in the floor designer." %}</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>{% icon "clock" 18 %} {% t "Opening hours for bookings" %}</h2></div>
+      <div class="card-body">
+        <div class="hours-grid">
+          {% for d in days %}
+          <strong>{{ d.name|tr }}</strong>
+          <label class="switch"><input type="checkbox" name="open_{{ d.d }}" value="1" {% if d.open %}checked{% endif %}><span></span></label>
+          <input class="inp" type="time" name="from_{{ d.d }}" value="{{ d.from }}">
+          <input class="inp" type="time" name="to_{{ d.d }}" value="{{ d.to }}">
+          {% endfor %}
+        </div>
+        <p class="muted small">{% t "A closing time after midnight is allowed (e.g. 18:00 – 01:00)." %}</p>
+      </div>
+    </div>
+  </div>
+  <div class="card mt"><div class="form-actions" style="border:0"><button class="btn primary">{% icon "check" 16 %} {% t "Save settings" %}</button></div></div>
+</form>
+{% endblock %}

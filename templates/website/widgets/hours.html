@@ -1,0 +1,4 @@
+<div class="wg wg-hours">
+  {% if d.title %}<h3>{{ d.title }}</h3>{% endif %}
+  <table class="hours">{% for h in hours %}<tr class="{% if h.today %}today{% endif %}"><th>{{ h.day|tr }}</th><td>{% if h.open %}{{ h.open }} – {{ h.close }}{% else %}{% t "Closed" %}{% endif %}</td></tr>{% endfor %}</table>
+</div>

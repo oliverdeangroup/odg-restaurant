@@ -1,0 +1,4 @@
+<div class="wg wg-menu">
+  {% if d.title %}<h2 class="al-center">{{ d.title }}</h2>{% endif %}
+  {% for node in tree %}{% include "website/widgets/_menu_node.html" %}{% empty %}<p class="muted">{% t "The menu will appear here as soon as products are added in POS → Products." %}</p>{% endfor %}
+</div>

@@ -1,0 +1,39 @@
+{% comment %}Drag & drop builder. The layout JSON is written to <input name="layout"> on save.{% endcomment %}
+<input type="hidden" name="layout" id="layout-input">
+<div class="builder" id="builder" style="--p:{{ look.primary_color }};--s:{{ look.secondary_color }};--a:{{ look.accent_color }};--bbg:{{ look.background_color }};--btx:{{ look.text_color }};--hf:'{{ look.heading_font }}',serif;--bf:'{{ look.body_font }}',sans-serif">
+  <aside class="b-palette">
+    <div class="b-pal-title">{% t "Widgets" %}</div>
+    <div class="b-widgets" id="b-palette"></div>
+    <div class="b-pal-title">{% t "Add section" %}</div>
+    <div class="b-layouts" id="b-layouts"></div>
+    <p class="muted small" style="padding:0 12px">{% t "Drag a widget into a column. Drag sections and widgets to change the order. Click to edit." %}</p>
+  </aside>
+  <div class="b-canvas" id="b-canvas"></div>
+  <aside class="b-settings" id="b-settings"><div class="b-empty muted small">{% t "Click a widget or a section to change its settings." %}</div></aside>
+</div>
+<div class="modal" id="media-modal"><div class="modal-box wide">
+  <div class="modal-head"><h2>{% t "Choose an image" %}</h2><button class="modal-close" type="button">{% icon "x" 18 %}</button></div>
+  <div class="modal-body stack">
+    <div class="row"><input type="file" accept="image/*" id="media-upload" class="inp" style="flex:1"><span class="muted small" id="media-status"></span></div>
+    <div class="row"><input class="inp" id="media-url" placeholder="https://…" style="flex:1"><button class="btn" type="button" id="media-use-url">{% t "Use this link" %}</button></div>
+    <div class="b-media-grid" id="media-grid"></div>
+  </div>
+</div></div>
+{{ builder_spec|json_script:"builder-spec" }}
+{{ layout|json_script:"builder-layout" }}
+<script>
+window.BUILDER_T = {
+  section: {% tjs "Section" %}, column: {% tjs "Column" %}, drop: {% tjs "Drop a widget here" %}, del: {% tjs "Delete" %},
+  dup: {% tjs "Duplicate" %}, up: {% tjs "Move up" %}, down: {% tjs "Move down" %}, settings: {% tjs "Settings" %},
+  layout: {% tjs "Columns" %}, bg: {% tjs "Background colour" %}, bgimg: {% tjs "Background image" %}, overlay: {% tjs "Darkening (0–90)" %},
+  padding: {% tjs "Spacing" %}, width: {% tjs "Width" %}, dark: {% tjs "Light text (dark background)" %}, anchor: {% tjs "Anchor (for #links)" %},
+  boxed: {% tjs "Boxed" %}, narrow: {% tjs "Narrow" %}, full: {% tjs "Full width" %}, none: {% tjs "None" %}, sm: {% tjs "Small" %}, md: {% tjs "Medium" %},
+  lg: {% tjs "Large" %}, xl: {% tjs "Extra large" %}, choose: {% tjs "Choose image" %}, remove: {% tjs "Remove" %}, add: {% tjs "Add" %},
+  confirmDel: {% tjs "Delete this section with all its widgets?" %}, empty: {% tjs "Empty page. Add a section on the left to start." %},
+  uploading: {% tjs "Uploading…" %}, menuAll: {% tjs "All website categories" %}, reservation: {% tjs "The online reservation form appears here." %},
+  hours: {% tjs "Your opening hours (Settings → Reservations)." %}, contact: {% tjs "Address, phone and e-mail from Website → Brand." %},
+  social: {% tjs "Links from Website → Brand." %}, map: {% tjs "Google Maps" %}, align: {% tjs "Alignment" %}, left: {% tjs "Left" %}, center: {% tjs "Centre" %},
+  bold: {% tjs "Bold" %}, italic: {% tjs "Italic" %}, link: {% tjs "Link" %}, list: {% tjs "List" %}, h3: {% tjs "Subheading" %}, linkUrl: {% tjs "Link address" %},
+  review: {% tjs "Review" %}, image: {% tjs "Image" %}
+};
+</script>

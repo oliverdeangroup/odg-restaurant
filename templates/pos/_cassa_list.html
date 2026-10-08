@@ -1,0 +1,11 @@
+<div class="card-head"><h2>{% icon "table" 16 %} {% t "Open tables" %}</h2><span class="pill">{{ orders|length }}</span></div>
+<div class="cassa-list">
+  {% for o in orders %}
+  <a href="{% url 'pos:cassa_order' o.pk %}" class="{% if order and o.pk == order.pk %}on{% endif %} {% if o.status == 'billing' %}billing{% endif %}">
+    <span class="tno">{{ o.table_number }}</span>
+    <span class="info"><strong>{{ o.guests }} {% t "guests" %}</strong>{% if o.status == "billing" %} <span class="pill st-billing">{% t "Bill requested" %}</span>{% endif %}
+      <small>{{ o.code }} · {{ o.waiter.first_name|default:o.waiter.username|default:"—" }} · {{ o.opened_at|time:"H:i" }}</small></span>
+    <span class="amt money">{{ o.amount|default:0|money }}</span>
+  </a>
+  {% empty %}<p class="muted pad">{% t "No open tables." %}</p>{% endfor %}
+</div>

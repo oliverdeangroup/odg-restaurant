@@ -1,0 +1,70 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Close the day" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} / <a href="{% url 'pos:cassa' %}">{% t "Cassa" %}</a> /</div>{% endblock %}
+{% block heading %}{% t "Close the day" %} · {{ day|fdate }}{% endblock %}
+{% block actions %}<form method="get" class="row"><input class="inp" type="date" name="date" value="{{ day|date:'Y-m-d' }}" style="width:auto" onchange="this.form.submit()"></form>{% endblock %}
+{% block content %}
+<div class="grid g-side">
+  <div class="card">
+    <div class="card-head"><h2>{% icon "cash" 18 %} {% t "Cash count (Z report)" %}</h2>{% if existing %}<span class="pill ok">{% t "Closed" %}</span>{% endif %}</div>
+    {% if existing %}
+    <div class="card-body">
+      <dl class="kv">
+        <dt>{% t "Opening cash" %}</dt><dd class="money">{{ existing.opening_cash|money }}</dd>
+        <dt>{% t "Expected cash" %}</dt><dd class="money">{{ existing.expected_cash|money }}</dd>
+        <dt>{% t "Counted cash" %}</dt><dd class="money">{{ existing.counted_cash|money }}</dd>
+        <dt>{% t "Difference" %}</dt><dd class="money {% if existing.difference < 0 %}neg{% elif existing.difference > 0 %}pos{% endif %}">{{ existing.difference|money }}</dd>
+        <dt>{% t "Card" %}</dt><dd class="money">{{ existing.card_total|money }}</dd>
+        <dt>{% t "Sales" %}</dt><dd class="money">{{ existing.sales_total|money }}</dd>
+        <dt>{% t "Tips" %}</dt><dd class="money">{{ existing.tips_total|money }}</dd>
+        <dt>{% t "Closed by" %}</dt><dd>{{ existing.closed_by|default:"—" }} · {{ existing.closed_at|fdatetime }}</dd>
+        {% if existing.note %}<dt>{% t "Note" %}</dt><dd>{{ existing.note }}</dd>{% endif %}
+      </dl>
+    </div>
+    {% else %}
+    <form method="post" id="close-form">{% csrf_token %}<input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">
+      <div class="card-body stack">
+        {% if fig.open_orders %}<div class="alert warning">{% t "There are still {0} open tables. Close them in Cassa first if the day is over." fig.open_orders %}</div>{% endif %}
+        <div class="grid g2">
+          <div class="field"><label>{% t "Opening cash (float)" %}</label><input class="inp" type="number" step="0.01" min="0" name="opening_cash" id="f-open" value="0"></div>
+          <div class="field"><label>{% t "Counted cash" %}</label><input class="inp" type="number" step="0.01" min="0" name="counted_cash" id="f-count" required></div>
+        </div>
+        <table class="sum-table">
+          <tr><td>{% t "Cash payments incl. cash tips" %}</td><td>{{ fig.cash|money }}</td></tr>
+          <tr><td>{% t "Expected in the drawer" %}</td><td id="s-exp"></td></tr>
+          <tr class="grand"><td>{% t "Difference" %}</td><td id="s-diff">—</td></tr>
+        </table>
+        <div class="field"><label>{% t "Note" %}</label><input class="inp" name="note" maxlength="255"></div>
+      </div>
+      <div class="form-actions"><button class="btn primary" data-confirm="{% t 'Close this day? This cannot be changed afterwards.' %}">{% icon "lock" 16 %} {% t "Close the day" %}</button></div>
+    </form>
+    {% endif %}
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>{% t "Day totals" %}</h3></div>
+    <div class="card-body"><dl class="kv">
+      <dt>{% t "Bills" %}</dt><dd>{{ fig.count }}</dd>
+      <dt>{% t "Sales" %}</dt><dd class="money">{{ fig.sales|money }}</dd>
+      <dt>{% t "Tips" %}</dt><dd class="money">{{ fig.tips|money }}</dd>
+      <dt>{% t "Cash" %}</dt><dd class="money">{{ fig.cash|money }}</dd>
+      <dt>{% t "Card" %}</dt><dd class="money">{{ fig.card|money }}</dd>
+    </dl></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const o = document.getElementById("f-open"), c = document.getElementById("f-count");
+  if (!o) return;
+  const cash = {{ fig.cash|stringformat:"s" }}, sym = {{ s.currency_symbol|jsonattr }};
+  const f = (v) => sym + " " + v.toFixed(2);
+  function upd() {
+    const exp = (Number(o.value) || 0) + cash;
+    document.getElementById("s-exp").textContent = f(exp);
+    document.getElementById("s-diff").textContent = c.value ? f((Number(c.value) || 0) - exp) : "—";
+  }
+  o.addEventListener("input", upd); c.addEventListener("input", upd); upd();
+})();
+</script>
+{% endblock %}

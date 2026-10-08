@@ -1,0 +1,98 @@
+{% if order.is_open %}
+<div class="card">
+  <div class="card-head">
+    <div><h2>{% t "Table" %} {{ order.table_number }} · {{ order.guests }} {% t "guests" %}</h2>
+      <span class="muted small">{{ order.code }} · {% t "Waiter" %}: {{ order.waiter|default:"—" }}{% if order.customer %} · <a href="{% url 'pos:customer' order.customer_id %}">{{ order.customer.code }} {{ order.customer }}</a>{% endif %}</span></div>
+    {% if waiting %}<span class="pill s-preparing">{% icon "clock" 12 %} {{ waiting }} {% t "items still being prepared" %}</span>{% endif %}
+  </div>
+  <div class="card-body">
+    {% for g in groups %}
+    <div class="bill-group {% if not g.unpaid %}paid{% endif %}">
+      <div class="bill-group-head">
+        <strong>{% if g.guest %}{% t "Guest" %} #{{ g.guest }}{% else %}{% t "Table (shared)" %}{% endif %}</strong>
+        <span class="row">
+          {% if g.unpaid %}<span class="money">{{ g.totals.total|money }}</span>
+            {% if can_pay and groups|length > 1 %}<button class="btn sm" type="button" data-pick-guest="{{ g.guest }}" data-sub="{{ g.totals.subtotal }}">{% icon "split" 13 %} {% t "Pay separately" %}</button>{% endif %}
+          {% else %}<span class="pill ok">{% t "Paid" %}</span>{% endif %}
+        </span>
+      </div>
+      {% for it in g.items %}
+      <div class="bill-line {% if it.paid %}paid{% endif %}"><span>{{ it.qty }}× {{ it.name }}{% if it.options %}<small>{{ it.options|join:" · " }}</small>{% endif %}</span><span class="money">{{ it.line_total|money }}</span></div>
+      {% endfor %}
+    </div>
+    {% empty %}<p class="muted">{% t "No items on this table yet." %}</p>{% endfor %}
+  </div>
+</div>
+
+{% if can_pay and has_unpaid %}
+<form method="post" action="{% url 'pos:pay' order.pk %}" class="card" id="pay-form" data-dirty="0">
+  {% csrf_token %}
+  <input type="hidden" name="guest" value="all" id="pay-guest">
+  <div class="card-head"><h2>{% icon "cash" 18 %} {% t "Checkout" %} — <span id="pay-who">{% t "whole table" %}</span></h2>
+    <button class="btn sm ghost hide" type="button" id="pay-all">{% t "Back to whole table" %}</button></div>
+  <div class="card-body stack">
+    <table class="sum-table">
+      <tr><td>{% t "Subtotal" %}</td><td id="s-sub"></td></tr>
+      <tr id="row-disc"><td>{% t "Discount" %}</td><td id="s-disc"></td></tr>
+      {% if s.service_charge_percent %}<tr><td>{% t "Service charge" %} {{ s.service_charge_percent }}%</td><td id="s-svc"></td></tr>{% endif %}
+      {% if not s.prices_include_tax %}<tr><td>{{ s.tax_name }} {{ s.tax_rate }}%</td><td id="s-tax"></td></tr>{% endif %}
+      <tr><td>{% t "Tip" %}</td><td id="s-tip"></td></tr>
+      <tr class="grand"><td>{% t "To pay" %}</td><td id="s-total"></td></tr>
+      {% if s.prices_include_tax %}<tr><td class="small muted">{% t "Including" %} {{ s.tax_name }} {{ s.tax_rate }}%</td><td class="small muted" id="s-tax"></td></tr>{% endif %}
+    </table>
+    <div class="grid g2">
+      <div class="field"><label>{% t "Tip" %}</label>
+        <div class="tip-btns mb" style="margin-bottom:6px">{% for p in s.tips %}<button class="btn sm" type="button" data-tip="{{ p }}">{{ p }}%</button>{% endfor %}<button class="btn sm" type="button" data-tip="0">{% t "None" %}</button></div>
+        <input class="inp" type="number" step="0.01" min="0" name="tip" id="f-tip" value="0"></div>
+      <div class="field"><label>{% t "Discount" %} ({{ s.currency_symbol }})</label><input class="inp" type="number" step="0.01" min="0" name="discount" id="f-disc" value="0"></div>
+    </div>
+    <div class="pay-methods">
+      <label><input type="radio" name="method" value="cash" required><span>{% icon "cash" 20 %} {% t "Cash" %}</span></label>
+      <label><input type="radio" name="method" value="card" checked><span>{% icon "card" 20 %} {% t "Card" %}</span></label>
+    </div>
+    <div class="grid g2 hide" id="cash-box">
+      <div class="field"><label>{% t "Received" %}</label><input class="inp" type="number" step="0.01" min="0" name="received" id="f-recv"></div>
+      <div class="field"><label>{% t "Change" %}</label><div class="big-num money" id="s-change">—</div></div>
+    </div>
+    <div class="field"><label>{% t "Bill format" %}</label>
+      <div class="btn-group">{% for v, l in formats %}<label style="margin:0"><input type="radio" name="fmt" value="{{ v }}" {% if v == s.default_bill_format %}checked{% endif %} style="display:none" onchange="this.closest('.btn-group').querySelectorAll('span').forEach(x=>x.classList.remove('on'));this.nextElementSibling.classList.add('on')"><span class="{% if v == s.default_bill_format %}on{% endif %}" style="display:inline-block;padding:6px 12px;cursor:pointer;font-weight:600">{{ l|tr }}</span></label>{% endfor %}</div>
+    </div>
+  </div>
+  <div class="form-actions" style="justify-content:space-between">
+    <button class="btn" type="submit" formaction="{% url 'pos:proforma' order.pk %}" formtarget="_blank">{% icon "receipt" 16 %} {% t "Pro-forma bill (PDF)" %}</button>
+    <button class="btn ok big" style="width:auto" name="pay" value="1" data-confirm="{% t 'Mark as paid and close?' %}">{% icon "check" 18 %} {% t "Paid / Checkout" %}</button>
+  </div>
+</form>
+<script type="application/json" id="pay-data">{"sub": "{{ unpaid_subtotal }}", "svc": "{{ s.service_charge_percent }}", "rate": "{{ s.tax_rate }}", "incl": {% if s.prices_include_tax %}true{% else %}false{% endif %}, "money": "{{ s.currency_symbol }}"}</script>
+{% endif %}
+
+{% if can_pay %}
+<details class="card mt"><summary class="pad" style="cursor:pointer">{% icon "trash" 14 %} {% t "Cancel this order" %}</summary>
+  <form method="post" action="{% url 'pos:void_order' order.pk %}" class="card-body row">{% csrf_token %}
+    <input class="inp" name="reason" required placeholder="{% t 'Reason (required)' %}" style="flex:1">
+    <button class="btn danger" data-confirm="{% t 'Cancel the whole order? This cannot be undone.' %}">{% t "Cancel order" %}</button>
+  </form>
+</details>
+{% endif %}
+{% else %}
+<div class="card"><div class="card-body"><div class="paid-banner">{% icon "check" 20 %} {% t "This order is closed" %} ({{ order.get_status_display|tr }}).</div>
+  <a class="btn" href="{% url 'pos:history_order' order.pk %}">{% icon "receipt" 16 %} {% t "Open in order history" %}</a></div></div>
+{% endif %}
+
+{% if payments %}
+<div class="card mt">
+  <div class="card-head"><h3>{% t "Payments" %}</h3></div>
+  <div class="card-body tight"><table class="tbl"><tbody>
+    {% for p in payments %}<tr><td>{{ p.bill_number }}</td><td>{% if p.guest_no is not None %}{% if p.guest_no %}{% t "Guest" %} #{{ p.guest_no }}{% else %}{% t "Table (shared)" %}{% endif %}{% else %}{% t "Whole table" %}{% endif %}</td><td>{{ p.get_method_display|tr }}</td><td class="money right">{{ p.amount|money }}{% if p.tip %} <small class="muted">+ {{ p.tip|money }}</small>{% endif %}</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endif %}
+{% if bills %}
+<div class="card mt">
+  <div class="card-head"><h3>{% icon "receipt" 16 %} {% t "Saved bills" %}</h3></div>
+  <div class="card-body tight"><table class="tbl"><tbody>
+    {% for b in bills %}<tr><td>{% if b.is_receipt %}<span class="pill ok">{% t "Receipt" %}</span>{% else %}<span class="pill">{% t "Pro forma" %}</span>{% endif %} {{ b.number }}</td><td class="small muted">{{ b.get_fmt_display|tr }} · {{ b.created_at|time:"H:i" }}</td><td class="money">{{ b.total|money }}</td>
+      <td class="actions"><a class="btn sm" href="{% url 'pos:bill' b.pk %}" target="_blank">{% icon "printer" 14 %} {% t "Print" %}</a> <a class="btn sm icon" href="{% url 'pos:bill' b.pk %}?download=1">{% icon "download" 14 %}</a></td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endif %}

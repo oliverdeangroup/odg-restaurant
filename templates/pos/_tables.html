@@ -1,0 +1,37 @@
+<div class="waiter-grid">
+  <div class="card">
+    <div class="card-head">
+      <div class="legend">{% for k, l in legend %}<span class="{{ k }}"><i></i>{{ l }}</span>{% endfor %}</div>
+      <span class="muted small">{% t "Tap a table to take an order" %}</span>
+    </div>
+    <div class="card-body">{% include "pos/_floor.html" %}</div>
+  </div>
+  <div>
+    <div class="card">
+      <div class="card-head"><h2>{% icon "bell" 18 %} {% t "Ready to pick up" %}</h2>{% if pickup %}<span class="pill s-ready">{{ pickup|length }}</span>{% endif %}</div>
+      <div class="card-body tight">
+        {% for it in pickup %}
+        <div class="pick-item">
+          <span class="tno">{{ it.order.table_number }}</span>
+          <div class="what"><strong>{{ it.qty }}× {{ it.name }}</strong><small>{% if it.guest_no %}{% t "Guest" %} #{{ it.guest_no }}{% else %}{% t "Table" %}{% endif %} · {{ it.get_station_display|tr }} · {{ it.ready_at|time:"H:i" }}</small></div>
+          <form method="post" action="{% url 'pos:items_action' it.order_id %}" data-ajax>{% csrf_token %}<input type="hidden" name="item" value="{{ it.pk }}"><button class="btn sm ok" name="action" value="serve">{% icon "check" 14 %} {% t "Served" %}</button></form>
+        </div>
+        {% empty %}<p class="muted pad">{% t "Nothing to pick up right now." %}</p>{% endfor %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>{% icon "table" 18 %} {% if user.role == "waiter" %}{% t "My tables" %}{% else %}{% t "Open tables" %}{% endif %}</h2></div>
+      <div class="card-body tight">
+        {% for o in my_orders %}
+        <a class="pick-item" style="color:inherit" href="{% url 'pos:order' o.table_id %}">
+          <span class="tno" style="background:var(--st-busy-bg);color:var(--st-busy)">{{ o.table_number }}</span>
+          <div class="what"><strong>{{ o.guests }} {% t "guests" %}</strong><small>{{ o.code }} · {% t "since" %} {{ o.opened_at|time:"H:i" }}</small></div>
+          {% if o.ready %}<span class="pill s-ready">{% icon "bell" 12 %} {{ o.ready }}</span>{% endif %}
+          {% if o.waiting %}<span class="pill s-queued">{% icon "clock" 12 %} {{ o.waiting }}</span>{% endif %}
+          {% if o.status == "billing" %}<span class="pill st-billing">{% t "Bill" %}</span>{% endif %}
+        </a>
+        {% empty %}<p class="muted pad">{% t "No open tables." %}</p>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>

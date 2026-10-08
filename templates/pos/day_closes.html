@@ -1,0 +1,15 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Day closes" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Finance" %} /</div>{% endblock %}
+{% block heading %}{% t "Day closes" %}{% endblock %}
+{% block content %}
+<div class="card"><div class="card-body tight table-wrap">
+  <table class="tbl">
+    <thead><tr><th>{% t "Date" %}</th><th class="right">{% t "Sales" %}</th><th class="right">{% t "Card" %}</th><th class="right">{% t "Expected cash" %}</th><th class="right">{% t "Counted cash" %}</th><th class="right">{% t "Difference" %}</th><th>{% t "Closed by" %}</th></tr></thead>
+    <tbody>{% for d in page %}
+      <tr><td>{{ d.date|fdate }}</td><td class="right money">{{ d.sales_total|money }}</td><td class="right money">{{ d.card_total|money }}</td><td class="right money">{{ d.expected_cash|money }}</td><td class="right money">{{ d.counted_cash|money }}</td>
+        <td class="right money {% if d.difference < 0 %}neg{% elif d.difference > 0 %}pos{% endif %}">{{ d.difference|money }}</td><td class="small">{{ d.closed_by|default:"—" }}{% if d.note %}<br><span class="muted">{{ d.note }}</span>{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="7" class="empty">{% t "No days closed yet. Close a day in Cassa → Close the day." %}</td></tr>{% endfor %}</tbody>
+  </table>
+</div>{% include "core/_pager.html" %}</div>
+{% endblock %}

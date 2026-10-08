@@ -1,0 +1,12 @@
+<div class="wg wg-reviews">
+  {% if d.title %}<h2 class="al-center">{{ d.title }}</h2>{% endif %}
+  <div class="rv-grid cols-{{ d.columns }}">
+    {% for r in d.items %}
+    <blockquote class="rv">
+      <div class="stars" aria-label="{{ r.rating }}/5">{% for i in "12345" %}<span class="{% if forloop.counter <= r.rating %}on{% endif %}">★</span>{% endfor %}</div>
+      <p>{{ r.text }}</p>
+      <footer><strong>{{ r.name }}</strong>{% if r.source %} · {{ r.source }}{% endif %}</footer>
+    </blockquote>
+    {% endfor %}
+  </div>
+</div>

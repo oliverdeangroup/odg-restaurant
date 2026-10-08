@@ -1,0 +1,40 @@
+{% load static %}<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if not_found %}404 {{ seo.title_separator }} {% endif %}{{ meta_title }}</title>
+{% if meta_description %}<meta name="description" content="{{ meta_description }}">{% endif %}
+{% if seo.meta_keywords %}<meta name="keywords" content="{{ seo.meta_keywords }}">{% endif %}
+<meta name="robots" content="{% if noindex or not_found %}noindex, nofollow{% else %}index, follow, max-image-preview:large{% endif %}">
+{% if not not_found %}<link rel="canonical" href="{{ canonical }}">{% endif %}
+<meta property="og:type" content="restaurant">
+<meta property="og:site_name" content="{{ brand.name }}">
+<meta property="og:title" content="{{ meta_title }}">
+{% if meta_description %}<meta property="og:description" content="{{ meta_description }}">{% endif %}
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:locale" content="{% if lang == 'nl' %}nl_NL{% elif lang == 'es' %}es_ES{% else %}en_US{% endif %}">
+{% if og_image %}<meta property="og:image" content="{{ og_image }}"><meta name="twitter:image" content="{{ og_image }}">{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+{% if seo.google_verification %}<meta name="google-site-verification" content="{{ seo.google_verification }}">{% endif %}
+{% if seo.bing_verification %}<meta name="msvalidate.01" content="{{ seo.bing_verification }}">{% endif %}
+<meta name="theme-color" content="{{ look.primary_color }}">
+<link rel="icon" href="{% if brand.favicon %}{{ brand.favicon.url }}{% elif brand.logo %}{{ brand.logo.url }}{% else %}{% static 'odg/img/odg-restaurant.svg' %}{% endif %}">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family={{ look.heading_font|urlencode }}:wght@500;600;700&family={{ look.body_font|urlencode }}:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="{% static 'odg/css/site.css' %}?v={{ odg_version }}">
+<style>
+:root{--p:{{ look.primary_color }};--s:{{ look.secondary_color }};--a:{{ look.accent_color }};--bg:{{ look.background_color }};--tx:{{ look.text_color }};--hf:"{{ look.heading_font }}",Georgia,serif;--bf:"{{ look.body_font }}",system-ui,sans-serif;--fs:{{ look.base_font_size }}px;--rad:{{ look.radius }}px;--ov:{{ look.hero_overlay }}}
+{{ look.custom_css|safe }}
+</style>
+<script type="application/ld+json">{{ schema_json|safe }}</script>
+{% if seo.google_analytics_id %}<script async src="https://www.googletagmanager.com/gtag/js?id={{ seo.google_analytics_id|urlencode }}"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config",{{ seo.google_analytics_id|jsonattr }},{anonymize_ip:true});</script>{% endif %}
+</head>
+<body class="site theme-{{ look.theme }} hl-{{ look.header_layout }}{% if look.header_sticky %} sticky{% endif %}{% if is_home %} is-home{% endif %}{% if over_hero %} over-hero{% endif %}">
+{% include "core/_icons.html" %}
+<a class="skip" href="#main">{% t "Skip to content" %}</a>
+{% block body %}{% endblock %}
+{% if sys.demo_enabled %}<a class="demo-fab" href="/demo/">{% icon "pos" 16 %} {% t "Try the demo" %}</a>{% endif %}
+<script src="{% static 'odg/js/site.js' %}?v={{ odg_version }}" defer></script>
+</body>
+</html>

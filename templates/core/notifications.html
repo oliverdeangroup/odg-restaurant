@@ -1,0 +1,20 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Notifications" %}{% endblock %}
+{% block heading %}{% t "Notifications" %}{% endblock %}
+{% block actions %}<form method="post">{% csrf_token %}<button class="btn">{% icon "check" 16 %} {% t "Mark all as read" %}</button></form>{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-body tight">
+    <table class="tbl"><tbody>
+    {% for n in page %}
+      <tr style="{% if not n.is_read %}background:#fffbea{% endif %}">
+        <td style="width:36px">{% if n.category == "pickup" %}{% icon "bell" 18 %}{% elif n.category == "reservation" %}{% icon "calendar" 18 %}{% else %}{% icon "bell" 18 %}{% endif %}</td>
+        <td><a href="{% url 'core:notification_open' n.pk %}" style="{% if not n.is_read %}font-weight:700{% endif %}">{{ n.title }}</a><br><small class="muted">{{ n.message }}</small></td>
+        <td class="muted small right nowrap">{{ n.created_at|fdatetime }}</td>
+      </tr>
+    {% empty %}<tr><td class="empty">{% icon "bell" 36 %}<p>{% t "No notifications yet." %}</p></td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+  {% include "core/_pager.html" %}
+</div>
+{% endblock %}

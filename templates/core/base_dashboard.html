@@ -1,0 +1,116 @@
+{% load static %}<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0d1530">
+<title>{% block title %}{% t "Dashboard" %}{% endblock %} · {{ sys.system_name }}</title>
+<link rel="icon" href="{% static 'odg/img/odg-restaurant.svg' %}">
+<link rel="stylesheet" href="{% static 'odg/css/dashboard.css' %}?v={{ odg_version }}">
+<link rel="stylesheet" href="{% static 'odg/css/pos.css' %}?v={{ odg_version }}">
+<link rel="stylesheet" href="{% static 'odg/css/cms.css' %}?v={{ odg_version }}">
+{% block head %}{% endblock %}
+</head>
+<body class="dash {% if request.demo %}is-demo{% endif %} {% block body_class %}{% endblock %}">
+{% include "core/_icons.html" %}
+<header class="topbar">
+  <button class="tb-btn tb-menu" type="button" data-toggle-nav aria-label="{% t 'Menu' %}">{% icon "menu" 20 %}</button>
+  <a class="tb-brand" href="{% url 'core:dashboard' %}">
+    <span class="tb-logo"><img src="{% static 'odg/img/odg-restaurant.svg' %}" alt=""></span>
+    <span class="tb-name">{{ sys.system_name }}</span>
+  </a>
+  <a class="tb-site" href="/" target="_blank" rel="noopener">{% icon "external" 15 %} <span>{{ brand.name }}</span></a>
+  <div class="tb-right">
+    <span class="live-dot" id="live-dot" title="{% t 'Live: screens update automatically' %}"><i></i><span>{% t "Live" %}</span></span>
+    <div class="tb-lang" role="group" aria-label="{% t 'Language' %}">
+      {% for code, name in languages %}<a href="{% lang_url code %}" class="{% if code == lang %}on{% endif %}" title="{{ name }}">{{ code|upper }}</a>{% endfor %}
+    </div>
+    <div class="dd">
+      <button class="tb-btn" type="button" data-dd aria-label="{% t 'Notifications' %}">{% icon "bell" 19 %}<span class="badge" id="bell-badge" {% if not unread_count %}hidden{% endif %}>{{ unread_count }}</span></button>
+      <div class="dd-menu dd-wide">
+        <div class="dd-head"><strong>{% t "Notifications" %}</strong><a href="{% url 'core:notifications' %}">{% t "View all" %}</a></div>
+        {% for n in recent_notifications %}
+          <a class="dd-note {% if not n.is_read %}unread{% endif %}" href="{% url 'core:notification_open' n.pk %}">
+            <span>{{ n.title }}</span><small>{{ n.created_at|timesince }}</small>
+          </a>
+        {% empty %}<p class="muted pad">{% t "No notifications yet." %}</p>{% endfor %}
+      </div>
+    </div>
+    <div class="dd">
+      <button class="tb-user" type="button" data-dd>
+        {% if user.photo %}<img src="{{ user.photo_url }}" alt="">{% else %}<span class="avatar sm">{{ user.initials }}</span>{% endif %}
+        <span class="tb-uname">{{ user.get_full_name|default:user.username }}</span>{% icon "down" 14 %}
+      </button>
+      <div class="dd-menu">
+        <div class="dd-head"><strong>{{ user }}</strong><small>{{ user.get_role_display|tr }}</small></div>
+        <a href="{% url 'core:profile' %}">{% icon "user" 16 %} {% t "My profile" %}</a>
+        <a href="#" data-sound-toggle>{% icon "bell" 16 %} <span data-sound-label>{% t "Sound alerts" %}</span></a>
+        <a href="{% url 'core:logout' %}">{% icon "logout" 16 %} {% t "Log out" %}</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+{% if request.demo %}
+<div class="demo-bar">
+  <span class="demo-tag">DEMO</span>
+  <span class="demo-roles">{% t "View as" %}:
+    {% for r, label in demo_roles %}<a href="/dashboard/demo/enter/?as={{ r }}" class="{% if user.role == r %}on{% endif %}">{{ label|tr }}</a>{% endfor %}
+  </span>
+  <span class="demo-hint">{% t "Code" %} <strong>{{ request.demo.code }}</strong> · {% t "Only you see your changes." %}</span>
+  <span class="demo-actions">
+    <form method="post" action="/demo/reset/" class="inline" data-confirm="{% t 'Start again with a fresh demo restaurant? Your changes are removed.' %}">{% csrf_token %}<button class="demo-btn">{% icon "refresh" 14 %} {% t "Reset" %}</button></form>
+    <a class="demo-btn" href="/demo/exit/">{% icon "logout" 14 %} {% t "Exit demo" %}</a>
+  </span>
+</div>
+{% endif %}
+<nav class="sidenav" id="sidenav">
+  <ul>
+  {% for tab in nav %}
+    <li class="tab {% if tab.active %}open{% endif %} {% if tab.items %}has-sub{% endif %}">
+      <a href="{{ tab.url }}" class="tab-link">{% icon tab.icon 19 %}<span>{{ tab.label|tr }}</span></a>
+      {% if tab.items %}
+      <ul class="sub">
+        <li class="sub-title">{{ tab.label|tr }}</li>
+        {% for it in tab.items %}<li><a href="{{ it.url }}" class="{% if it.active %}on{% endif %}">{{ it.label|tr }}</a></li>{% endfor %}
+      </ul>
+      {% endif %}
+    </li>
+  {% endfor %}
+  </ul>
+  <div class="nav-foot">{{ sys.system_name }} v{{ odg_version }}</div>
+</nav>
+<div class="nav-scrim" data-toggle-nav></div>
+
+<main class="main">
+  <div class="page-head">
+    <div>
+      {% block crumbs %}{% endblock %}
+      <h1>{% block heading %}{% endblock %}</h1>
+    </div>
+    <div class="page-actions">{% block actions %}{% endblock %}</div>
+  </div>
+  {% if messages %}
+  <div class="flash">
+    {% for m in messages %}<div class="alert {{ m.tags }}">{{ m }}<button type="button" class="x" data-dismiss>{% icon "x" 14 %}</button></div>{% endfor %}
+  </div>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<script>
+window.ODG = {
+  live: "{% url 'pos:live' %}",
+  every: {{ pos_cfg.live_refresh_seconds|default:3 }},
+  sound: {% if pos_cfg.sound_alerts %}true{% else %}false{% endif %},
+  csrf: "{{ csrf_token }}",
+  money: {{ pos_cfg.currency_symbol|default:"Cg"|jsonattr }},
+  t: {soundOn: {% tjs "Sound alerts: on" %}, soundOff: {% tjs "Sound alerts: off" %}, offline: {% tjs "Connection lost — retrying…" %}}
+};
+</script>
+<script src="{% static 'odg/js/dashboard.js' %}?v={{ odg_version }}"></script>
+<script src="{% static 'odg/js/live.js' %}?v={{ odg_version }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

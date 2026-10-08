@@ -1,0 +1,2 @@
+{% if form.non_field_errors %}<ul class="errorlist full">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+{% for f in form %}{% include "core/_field.html" with f=f cls="" %}{% endfor %}

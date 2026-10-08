@@ -1,0 +1,13 @@
+{% comment %}Period switcher: day / week / month / year with previous / next.{% endcomment %}
+<div class="period-nav">
+  <div class="btn-group">
+    <a href="{% qs period='day' %}" class="{% if period == 'day' %}on{% endif %}">{% t "Day" %}</a>
+    <a href="{% qs period='week' %}" class="{% if period == 'week' %}on{% endif %}">{% t "Week" %}</a>
+    <a href="{% qs period='month' %}" class="{% if period == 'month' %}on{% endif %}">{% t "Month" %}</a>
+    {% if not no_year %}<a href="{% qs period='year' %}" class="{% if period == 'year' %}on{% endif %}">{% t "Year" %}</a>{% endif %}
+  </div>
+  <a class="btn sm icon" href="{% qs date=prev|date:'Y-m-d' %}">{% icon "left" 14 %}</a>
+  <span class="label">{% if period == "day" %}{{ start|fdate }}{% elif period == "month" %}{{ start|date:"F"|tr }} {{ start|date:"Y" }}{% elif period == "year" %}{{ start|date:"Y" }}{% else %}{{ start|fdate }} – {{ end|fdate }}{% endif %}</span>
+  <a class="btn sm icon" href="{% qs date=next|date:'Y-m-d' %}">{% icon "right" 14 %}</a>
+  <form method="get" class="inline"><input type="hidden" name="period" value="{{ period }}"><input class="inp" type="date" name="date" value="{{ ref|date:'Y-m-d' }}" style="width:auto" onchange="this.form.submit()"></form>
+</div>

@@ -1,0 +1,40 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Pages" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Website" %} /</div>{% endblock %}
+{% block heading %}{% t "Pages" %}{% endblock %}
+{% block actions %}<a class="btn primary" href="{% url 'website:page_new' %}">{% icon "plus" 16 %} {% t "Add page" %}</a>{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head">
+    <div class="row small">
+      <a href="?" class="{% if not status %}pill navy{% endif %}">{% t "All" %} ({{ counts.all }})</a>
+      <a href="?status=published" class="{% if status == 'published' %}pill navy{% endif %}">{% t "Published" %} ({{ counts.published }})</a>
+      <a href="?status=draft" class="{% if status == 'draft' %}pill navy{% endif %}">{% t "Draft" %} ({{ counts.draft }})</a>
+    </div>
+    <form class="filters" method="get">{% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}<div class="search">{% icon "search" 15 %}<input class="inp" name="q" value="{{ q }}" placeholder="{% t 'Search pages' %}"></div></form>
+  </div>
+  <div class="card-body tight table-wrap">
+    <table class="tbl">
+      <thead><tr><th>{% t "Title" %}</th><th>{% t "Address" %}</th><th>{% t "Status" %}</th><th>{% t "Author" %}</th><th>{% t "Updated" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for p in page %}
+        <tr>
+          <td><a href="{% url 'website:page_edit' p.pk %}"><strong>{% if p.parent %}— {% endif %}{{ p.title }}</strong></a>{% if p.is_homepage %} <span class="pill warn">{% icon "home" 12 %} {% t "Homepage" %}</span>{% endif %}</td>
+          <td class="small muted">{{ p.get_absolute_url }}</td>
+          <td><span class="pill {% if p.status == 'published' %}ok{% endif %}">{{ p.get_status_display|tr }}</span>{% if p.noindex %} <span class="pill">noindex</span>{% endif %}</td>
+          <td class="small">{{ p.author|default:"—" }}</td>
+          <td class="small muted nowrap">{{ p.updated_at|fdate }}</td>
+          <td class="actions">
+            <a class="btn sm icon" href="{{ p.get_absolute_url }}{% if p.status != 'published' %}?preview=1{% endif %}" target="_blank" title="{% t 'View' %}">{% icon "eye" 14 %}</a>
+            <a class="btn sm" href="{% url 'website:page_edit' p.pk %}">{% icon "edit" 14 %} {% t "Edit" %}</a>
+            <form class="inline" method="post" action="{% url 'website:page_duplicate' p.pk %}">{% csrf_token %}<button class="btn sm icon" title="{% t 'Duplicate' %}">{% icon "layers" 14 %}</button></form>
+            <form class="inline" method="post" action="{% url 'website:page_delete' p.pk %}" data-confirm="{% t 'Delete this page?' %}">{% csrf_token %}<button class="btn sm icon danger" title="{% t 'Delete' %}">{% icon "trash" 14 %}</button></form>
+          </td>
+        </tr>
+      {% empty %}<tr><td colspan="6" class="empty">{% icon "file" 36 %}<p>{% t "No pages yet." %}</p></td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "core/_pager.html" %}
+</div>
+{% endblock %}

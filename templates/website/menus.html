@@ -1,0 +1,109 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Menu" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Website" %} /</div>{% endblock %}
+{% block heading %}{% t "Menu" %}{% endblock %}
+{% block actions %}<button class="btn primary" data-modal="menu-modal" data-fill='{"pk":"","m-name":"","m-location":"none"}'>{% icon "plus" 16 %} {% t "New menu" %}</button>{% endblock %}
+{% block content %}
+{% if menus %}
+<div class="row mb">
+  <span class="muted">{% t "Menu" %}:</span>
+  <div class="btn-group">{% for m in menus %}<a href="{% url 'website:menu' m.pk %}" class="{% if m.pk == menu.pk %}on{% endif %}">{{ m.name }}</a>{% endfor %}</div>
+</div>
+<div class="grid g-side">
+  <div class="card">
+    <div class="card-head">
+      <div><h2 style="margin:0">{{ menu.name }}</h2><small class="muted">{{ menu.get_location_display|tr }}</small></div>
+      <div class="row">
+        <button class="btn sm" data-modal="menu-modal" data-fill='{"pk":"{{ menu.pk }}","m-name":"{{ menu.name|escapejs }}","m-location":"{{ menu.location }}"}'>{% icon "edit" 14 %} {% t "Rename / location" %}</button>
+        <form method="post" class="inline" data-confirm="{% t 'Delete this menu?' %}">{% csrf_token %}<input type="hidden" name="action" value="menu_delete"><button class="btn sm icon danger">{% icon "trash" 14 %}</button></form>
+      </div>
+    </div>
+    <div class="card-body">
+      <p class="muted small mt0">{% t "Drag the items to change the order. Drag an item to the right to make it a submenu item." %}</p>
+      <ul class="menu-tree" id="menu-tree">
+        {% for it in tree %}
+        <li class="mt-item" data-id="{{ it.pk }}" draggable="true">
+          <div class="mt-row">{% icon "menu" 15 %}<strong>{{ it.label }}</strong><span class="muted small">{{ it.href }}</span>
+            <span class="mt-act"><button class="btn sm icon mt-indent" type="button" title="{% t 'Make submenu' %}">{% icon "right" 13 %}</button><button class="btn sm icon" type="button" data-modal="item-modal" data-fill='{"pk":"{{ it.pk }}","i-label":"{{ it.label|escapejs }}","i-page":"{{ it.page_id|default:"" }}","i-url":"{{ it.url|escapejs }}","i-parent":"","i-order":"{{ it.order }}","i-new_tab":{{ it.new_tab|yesno:"true,false" }}}'>{% icon "edit" 13 %}</button><form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="item_delete"><input type="hidden" name="pk" value="{{ it.pk }}"><button class="btn sm icon danger">{% icon "trash" 13 %}</button></form></span>
+          </div>
+          <ul class="mt-sub">
+            {% for s in it.subs %}
+            <li class="mt-item" data-id="{{ s.pk }}" draggable="true">
+              <div class="mt-row">{% icon "menu" 15 %}<strong>{{ s.label }}</strong><span class="muted small">{{ s.href }}</span>
+                <span class="mt-act"><button class="btn sm icon mt-outdent" type="button" title="{% t 'Move up a level' %}">{% icon "left" 13 %}</button><button class="btn sm icon" type="button" data-modal="item-modal" data-fill='{"pk":"{{ s.pk }}","i-label":"{{ s.label|escapejs }}","i-page":"{{ s.page_id|default:"" }}","i-url":"{{ s.url|escapejs }}","i-parent":"{{ s.parent_id }}","i-order":"{{ s.order }}","i-new_tab":{{ s.new_tab|yesno:"true,false" }}}'>{% icon "edit" 13 %}</button><form method="post" class="inline">{% csrf_token %}<input type="hidden" name="action" value="item_delete"><input type="hidden" name="pk" value="{{ s.pk }}"><button class="btn sm icon danger">{% icon "trash" 13 %}</button></form></span>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </li>
+        {% empty %}<li class="empty">{% t "This menu is empty. Add pages on the right." %}</li>{% endfor %}
+      </ul>
+      <p class="small muted" id="saved-msg" style="display:none">{% icon "check" 14 %} {% t "Order saved." %}</p>
+    </div>
+  </div>
+  <div>
+    <form class="card" method="post">
+      {% csrf_token %}<input type="hidden" name="action" value="item">
+      <div class="card-head"><h3>{% icon "plus" 16 %} {% t "Add menu item" %}</h3></div>
+      <div class="card-body stack">
+        {% include "core/_field.html" with f=iform.page %}
+        {% include "core/_field.html" with f=iform.label %}
+        {% include "core/_field.html" with f=iform.url %}
+        {% include "core/_field.html" with f=iform.parent %}
+        {% include "core/_field.html" with f=iform.new_tab %}
+      </div>
+      <div class="form-actions"><button class="btn primary">{% t "Add to menu" %}</button></div>
+    </form>
+  </div>
+</div>
+<div class="modal" id="item-modal"><div class="modal-box"><form method="post">{% csrf_token %}<input type="hidden" name="action" value="item"><input type="hidden" name="pk">
+  <div class="modal-head"><h2>{% t "Menu item" %}</h2><button class="modal-close" type="button">{% icon "x" 18 %}</button></div>
+  <div class="modal-body form-grid">{% include "core/_form.html" with form=iform %}</div>
+  <div class="form-actions"><button class="btn primary">{% t "Save" %}</button></div></form></div></div>
+{% else %}
+<div class="card empty">{% icon "list" 40 %}<p>{% t "No menus yet." %}</p><button class="btn primary" data-modal="menu-modal">{% t "New menu" %}</button></div>
+{% endif %}
+<div class="modal" id="menu-modal"><div class="modal-box"><form method="post">{% csrf_token %}<input type="hidden" name="action" value="menu"><input type="hidden" name="pk">
+  <div class="modal-head"><h2>{% t "Menu" %}</h2><button class="modal-close" type="button">{% icon "x" 18 %}</button></div>
+  <div class="modal-body form-grid">{% include "core/_form.html" with form=mform %}</div>
+  <div class="form-actions"><button class="btn primary">{% t "Save" %}</button></div></form></div></div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const tree = document.getElementById("menu-tree");
+  if (!tree) return;
+  const csrf = document.querySelector("[name=csrfmiddlewaretoken]").value;
+  let dragged = null;
+  function save() {
+    const order = [];
+    tree.querySelectorAll(":scope > .mt-item").forEach((li) => {
+      order.push({ id: li.dataset.id, parent: null });
+      li.querySelectorAll(":scope > .mt-sub > .mt-item").forEach((s) => order.push({ id: s.dataset.id, parent: li.dataset.id }));
+    });
+    const fd = new FormData();
+    fd.append("action", "reorder"); fd.append("order", JSON.stringify(order)); fd.append("csrfmiddlewaretoken", csrf);
+    fetch(location.href, { method: "POST", body: fd }).then(() => {
+      const m = document.getElementById("saved-msg"); m.style.display = ""; setTimeout(() => (m.style.display = "none"), 1500);
+    });
+  }
+  tree.addEventListener("dragstart", (e) => { dragged = e.target.closest(".mt-item"); e.dataTransfer.effectAllowed = "move"; dragged.classList.add("dragging"); });
+  tree.addEventListener("dragend", () => { if (dragged) dragged.classList.remove("dragging"); dragged = null; save(); });
+  tree.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const over = e.target.closest(".mt-item");
+    if (!over || !dragged || over === dragged || dragged.contains(over)) return;
+    const r = over.getBoundingClientRect();
+    over.parentElement.insertBefore(dragged, e.clientY > r.top + r.height / 2 ? over.nextSibling : over);
+  });
+  tree.addEventListener("click", (e) => {
+    const ind = e.target.closest(".mt-indent"), out = e.target.closest(".mt-outdent");
+    if (ind) {
+      const li = ind.closest(".mt-item"), prev = li.previousElementSibling;
+      if (prev && prev.classList.contains("mt-item")) { prev.querySelector(".mt-sub").appendChild(li); save(); location.reload(); }
+    }
+    if (out) { const li = out.closest(".mt-item"); const parent = li.closest(".mt-sub").closest(".mt-item"); tree.insertBefore(li, parent.nextSibling); save(); location.reload(); }
+  });
+})();
+</script>
+{% endblock %}

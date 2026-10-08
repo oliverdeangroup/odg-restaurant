@@ -1,0 +1,9 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Home" %}{% endblock %}
+{% block heading %}{% t "Welcome, {0}" user.first_name|default:user.username %} <small class="muted" style="font-size:14px;font-weight:600">· {{ user.get_role_display|tr }}</small>{% endblock %}
+{% block content %}
+{% if actions %}
+<div class="qa-grid mb">{% for a in actions %}<a class="qa" href="{{ a.url }}">{% icon a.icon 22 %}<span>{{ a.label|tr }}</span></a>{% endfor %}</div>
+{% endif %}
+<div data-live-src="{% url 'core:home' %}?partial=1">{% include "core/_home_live.html" %}</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% load static %}<figure class="wg wg-image{% if d.rounded %} rounded{% endif %}" style="max-width:{{ d.width|default:100 }}%">
+  {% if d.link %}<a href="{{ d.link }}">{% endif %}
+  {% if d.src %}<img src="{{ d.src }}" alt="{{ d.alt }}" loading="lazy">{% else %}<div class="img-ph" role="img" aria-label="{{ d.alt }}"><span>{% icon "image" 34 %}</span></div>{% endif %}
+  {% if d.link %}</a>{% endif %}
+  {% if d.caption %}<figcaption>{{ d.caption }}</figcaption>{% endif %}
+</figure>

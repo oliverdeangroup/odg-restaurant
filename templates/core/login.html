@@ -1,0 +1,28 @@
+{% load static %}<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{% t "Log in" %} · {{ sys.system_name }}</title>
+<link rel="icon" href="{% static 'odg/img/odg-restaurant.svg' %}">
+<link rel="stylesheet" href="{% static 'odg/css/dashboard.css' %}?v={{ odg_version }}">
+</head>
+<body class="login">
+<form class="login-box" method="post" novalidate>
+  {% csrf_token %}
+  <div class="login-logo">
+    <img src="{% if brand.logo %}{{ brand.logo.url }}{% else %}{% static 'odg/img/odg-restaurant.svg' %}{% endif %}" alt="{{ sys.system_name }}">
+    <strong>{{ sys.system_name }}</strong>
+    <span>{{ brand.name }}</span>
+  </div>
+  {% if timeout %}<div class="alert warning mb">{% t "You were logged out because you were inactive." %}</div>{% endif %}
+  {% if error %}<div class="alert error mb">{{ error }}</div>{% endif %}
+  <input type="hidden" name="next" value="{{ next }}">
+  <div class="field"><label for="u">{% t "Username or e-mail" %}</label><input class="inp" id="u" name="username" value="{{ username }}" autocomplete="username" autofocus required></div>
+  <div class="field"><label for="p">{% t "Password" %}</label><input class="inp" id="p" type="password" name="password" autocomplete="current-password" required></div>
+  <button class="btn primary" type="submit">{% t "Log in" %}</button>
+  <div class="login-lang">{% for code, name in languages %}<a href="{% lang_url code %}" class="{% if code == lang %}on{% endif %}">{{ name }}</a>{% endfor %}</div>
+  <p class="center muted small" style="margin:14px 0 0"><a href="/" class="muted">← {{ brand.name }}</a>{% if sys.demo_enabled %} · <a href="/demo/" class="muted">{% t "Try the demo" %}</a>{% endif %}</p>
+</form>
+</body>
+</html>

@@ -1,0 +1,20 @@
+# Copy to /etc/systemd/system/odg-restaurant.service (as root), then:
+#   systemctl daemon-reload && systemctl enable --now odg-restaurant
+[Unit]
+Description=ODG-RESTAURANT (Django + Gunicorn)
+After=network.target mysqld.service
+
+[Service]
+User=restaurant
+Group=restaurant
+WorkingDirectory=/home/restaurant/odg-restaurant
+ExecStartPre=/bin/mkdir -p /home/restaurant/odg-restaurant/run
+ExecStart=/home/restaurant/odg-restaurant/.venv/bin/gunicorn odg.wsgi:application -c deploy/gunicorn.conf.py
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=5
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,92 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Settings" %}{% endblock %}
+{% block heading %}{% t "Settings" %}{% endblock %}
+{% block content %}
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="grid g-side">
+    <div>
+      <div class="card">
+        <div class="card-head"><h2>{% icon "settings" 18 %} {% t "General" %}</h2></div>
+        <div class="card-body form-grid">
+          {% include "core/_field.html" with f=form.system_name %}
+          {% include "core/_field.html" with f=form.default_language %}
+          {% include "core/_field.html" with f=form.date_format %}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>{% icon "users" 18 %} {% t "User limits" %}</h2></div>
+        <div class="card-body form-grid">
+          {% include "core/_field.html" with f=form.max_managers %}
+          <p class="muted small" style="margin:0">{% t "There is always only one owner." %}</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>{% icon "lock" 18 %} {% t "Security" %}</h2></div>
+        <div class="card-body form-grid">
+          {% include "core/_field.html" with f=form.password_min_length %}
+          {% include "core/_field.html" with f=form.session_timeout_minutes %}
+          {% include "core/_field.html" with f=form.max_login_attempts %}
+          {% include "core/_field.html" with f=form.lockout_minutes %}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>{% icon "mail" 18 %} {% t "Outgoing e-mail (notifications)" %}</h2></div>
+        <div class="card-body form-grid">
+          <p class="muted full" style="margin:0">{% t "Used for reservation confirmations to guests and notifications to staff. Use an e-mail account from your cPanel." %}</p>
+          {% include "core/_field.html" with f=form.smtp_enabled cls="full" %}
+          {% include "core/_field.html" with f=form.notify_by_email cls="full" %}
+          {% include "core/_field.html" with f=form.smtp_host %}
+          {% include "core/_field.html" with f=form.smtp_port %}
+          {% include "core/_field.html" with f=form.smtp_security %}
+          {% include "core/_field.html" with f=form.smtp_username %}
+          {% include "core/_field.html" with f=form.smtp_password %}
+          {% include "core/_field.html" with f=form.smtp_from_email %}
+          {% include "core/_field.html" with f=form.smtp_from_name %}
+          <div class="full"><button class="btn" name="test_mail" value="1">{% icon "send" 15 %} {% t "Save and send a test e-mail to me" %}</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>{% icon "globe" 18 %} {% t "Website" %}</h2></div>
+        <div class="card-body form-grid">
+          {% include "core/_field.html" with f=form.demo_enabled cls="full" %}
+          {% include "core/_field.html" with f=form.maintenance_mode cls="full" %}
+          {% include "core/_field.html" with f=form.maintenance_message cls="full" %}
+          {% include "core/_field.html" with f=form.activity_log_days %}
+        </div>
+      </div>
+      <div class="card mt"><div class="form-actions" style="border:0"><button class="btn primary">{% icon "check" 16 %} {% t "Save settings" %}</button></div></div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-head"><h3>{% t "System information" %}</h3></div>
+        <div class="card-body stack small">
+          <div class="row between"><span class="muted">ODG-RESTAURANT</span><strong>v{{ info.version }}</strong></div>
+          <div class="row between"><span class="muted">Python</span><span>{{ info.python }}</span></div>
+          <div class="row between"><span class="muted">Django</span><span>{{ info.django }}</span></div>
+          <div class="row between"><span class="muted">{% t "Database" %}</span><span>{{ info.database }}</span></div>
+          <div><span class="muted">{% t "Data folder" %}</span><br><code style="word-break:break-all">{{ info.data_dir }}</code></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>{% icon "settings" 16 %} {% t "More settings" %}</h3></div>
+        <div class="card-body stack small">
+          <a href="{% url 'pos:settings' %}">{% icon "pos" 15 %} {% t "POS configuration" %} · {% t "Cassa & bills" %}</a>
+          <a href="{% url 'pos:settings' %}#floor">{% icon "grid" 15 %} {% t "Floor manager settings" %}</a>
+          <a href="{% url 'pos:reservation_settings' %}">{% icon "calendar" 15 %} {% t "Reservation rules" %}</a>
+          <a href="{% url 'website:appearance' %}">{% icon "palette" 15 %} {% t "Theme settings" %}</a>
+          <a href="{% url 'website:seo' %}">{% icon "search" 15 %} {% t "SEO configuration" %}</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>{% icon "shield" 16 %} {% t "Backup" %}</h3></div>
+        <div class="card-body stack">
+          <p class="muted small mt0">{% t "Makes a full export of all data plus a copy of the code. You can download backups under Settings → Updates." %}</p>
+          <button class="btn" form="backup-form">{% icon "download" 15 %} {% t "Make a backup now" %}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+<form id="backup-form" method="post" action="{% url 'core:backup_now' %}">{% csrf_token %}</form>
+{% endblock %}

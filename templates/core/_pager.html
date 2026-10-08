@@ -1,0 +1,7 @@
+{% if page.paginator.num_pages > 1 %}
+<div class="pager">
+  {% if page.has_previous %}<a href="{% qs page=page.previous_page_number %}">{% icon "left" 14 %}</a>{% endif %}
+  <span class="cur">{{ page.number }}</span><span class="muted" style="border:0;background:none">/ {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a href="{% qs page=page.next_page_number %}">{% icon "right" 14 %}</a>{% endif %}
+</div>
+{% endif %}

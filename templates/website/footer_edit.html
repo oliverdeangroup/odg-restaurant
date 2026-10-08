@@ -1,0 +1,18 @@
+{% extends "core/base_dashboard.html" %}{% load static %}
+{% block title %}{% t "Footer builder" %}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'odg/css/builder.css' %}?v={{ odg_version }}">{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Website" %} / <a href="{% url 'website:appearance' %}">{% t "Appearance" %}</a> /</div>{% endblock %}
+{% block heading %}{% t "Footer builder" %}{% endblock %}
+{% block actions %}<a class="btn" href="/" target="_blank">{% icon "eye" 16 %} {% t "View website" %}</a>{% endblock %}
+{% block content %}
+<form method="post" id="footer-form">
+  {% csrf_token %}
+  <p class="muted mt0">{% t "The footer is shown at the bottom of every page. Build it with sections and widgets, just like a page. Tip: a dark section with 3 columns." %}</p>
+  {% include "website/_builder.html" %}
+  <div class="card mt"><div class="form-actions" style="border:0"><button class="btn primary">{% icon "check" 16 %} {% t "Save footer" %}</button></div></div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="{% static 'odg/js/builder.js' %}?v={{ odg_version }}"></script>
+{% endblock %}

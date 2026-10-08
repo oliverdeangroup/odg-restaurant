@@ -1,0 +1,91 @@
+{% if cards %}
+<div class="grid g4 mb">
+  {% for c in cards %}<div class="card stat {% if c.hot %}hot{% endif %}"><span class="ico">{% icon c.icon 22 %}</span><div><div class="num">{{ c.value }}</div><div class="lbl">{{ c.label }}</div></div></div>{% endfor %}
+</div>
+{% endif %}
+<div class="grid g-side">
+  <div>
+    {% if perms.pos_waiter %}
+    <div class="card">
+      <div class="card-head"><h2>{% icon "bell" 18 %} {% t "Ready to pick up" %}</h2><a class="small" href="{% url 'pos:tables' %}">{% t "Take orders" %}</a></div>
+      <div class="card-body tight">
+        {% for it in pickup %}
+        <div class="pick-item"><span class="tno">{{ it.order.table_number }}</span>
+          <div class="what"><strong>{{ it.qty }}× {{ it.name }}</strong><small>{% if it.guest_no %}{% t "Guest" %} #{{ it.guest_no }}{% else %}{% t "Table" %}{% endif %} · {{ it.get_station_display|tr }}</small></div>
+          <form method="post" action="{% url 'pos:items_action' it.order_id %}" data-ajax>{% csrf_token %}<input type="hidden" name="item" value="{{ it.pk }}"><button class="btn sm ok" name="action" value="serve">{% icon "check" 14 %} {% t "Served" %}</button></form></div>
+        {% empty %}<p class="muted pad">{% t "Nothing to pick up right now." %}</p>{% endfor %}
+      </div>
+    </div>
+    {% if user.role == "waiter" %}
+    <div class="card">
+      <div class="card-head"><h2>{% icon "table" 18 %} {% t "My tables" %}</h2></div>
+      <div class="card-body tight">{% for o in my_tables %}
+        <a class="pick-item" style="color:inherit" href="{% url 'pos:order' o.table_id %}"><span class="tno" style="background:var(--st-busy-bg);color:var(--st-busy)">{{ o.table_number }}</span>
+          <div class="what"><strong>{{ o.guests }} {% t "guests" %}</strong><small>{{ o.code }}</small></div>
+          {% if o.n_ready %}<span class="pill s-ready">{{ o.n_ready }}</span>{% endif %}{% if o.n_wait %}<span class="pill s-queued">{{ o.n_wait }}</span>{% endif %}</a>
+      {% empty %}<p class="muted pad">{% t "No open tables." %}</p>{% endfor %}</div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {% if station_url %}
+    <div class="card"><div class="card-body row between"><span>{% t "Open your live queue to see and complete new orders." %}</span><a class="btn primary" href="{{ station_url }}">{% icon "right" 16 %} {% t "Open the queue" %}</a></div></div>
+    {% endif %}
+
+    {% if billing %}
+    <div class="card">
+      <div class="card-head"><h2>{% icon "receipt" 18 %} {% t "Bill requested" %}</h2></div>
+      <div class="card-body tight">{% for o in billing %}
+        <a class="pick-item" style="color:inherit" href="{% if perms.cassa %}{% url 'pos:cassa_order' o.pk %}{% else %}#{% endif %}"><span class="tno" style="background:var(--st-bill-bg);color:var(--st-bill)">{{ o.table_number }}</span>
+          <div class="what"><strong>{{ o.guests }} {% t "guests" %}</strong><small>{{ o.code }} · {{ o.waiter|default:"" }}</small></div></a>
+      {% endfor %}</div>
+    </div>
+    {% endif %}
+
+    {% if week %}
+    <div class="card">
+      <div class="card-head"><h2>{% icon "chart" 18 %} {% t "Sales — last 7 days" %}</h2><a class="small" href="{% url 'finance:overview' %}">{% t "Finance" %}</a></div>
+      <div class="card-body"><div class="bars">{% for d in week %}<div class="b" title="{{ d.d|fdate }}: {{ d.v|money }}"><i style="height:{{ d.pct }}%"></i><small>{{ d.d|date:"D"|tr|slice:":2" }}</small></div>{% endfor %}</div></div>
+    </div>
+    {% endif %}
+
+    {% if system %}
+    <div class="card">
+      <div class="card-head"><h2>{% icon "list" 18 %} {% t "Recent activity" %}</h2>{% if perms.activity %}<a class="small" href="{% url 'core:activity' %}">{% t "View all" %}</a>{% endif %}</div>
+      <div class="card-body tight table-wrap"><table class="tbl"><tbody>
+        {% for a in system.activity %}<tr><td style="width:100px"><span class="pill {% if a.kind == 'delete' %}err{% elif a.kind == 'create' %}ok{% elif a.kind == 'system' %}warn{% else %}navy{% endif %}">{{ a.get_kind_display|tr }}</span></td><td>{{ a.message }}</td><td class="muted small nowrap">{{ a.user|default:"—" }}</td><td class="muted small nowrap right">{{ a.created_at|timesince }}</td></tr>
+        {% empty %}<tr><td class="empty">{% t "Nothing happened yet." %}</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div>
+    {% if perms.pos_overview %}
+    <div class="card">
+      <div class="card-head"><h3>{% icon "calendar" 16 %} {% t "Next reservations" %}</h3>{% if perms.reservations %}<a class="small" href="{% url 'pos:reservations' %}">{% t "All" %}</a>{% endif %}</div>
+      <div class="card-body tight">{% for r in upcoming %}
+        <div class="pick-item"><span class="tno" style="background:var(--st-res-bg);color:var(--st-res)">{{ r.table.number|default:"?" }}</span><div class="what"><strong>{{ r.start|time:"H:i" }} · {{ r.customer }}</strong><small>{{ r.guests }} {% t "guests" %}</small></div></div>
+      {% empty %}<p class="muted pad">{% t "No reservations in the next hours." %}</p>{% endfor %}</div>
+    </div>
+    {% endif %}
+    <div class="card">
+      <div class="card-head"><h3>{% icon "bell" 16 %} {% t "Notifications" %}</h3><a class="small" href="{% url 'core:notifications' %}">{% t "View all" %}</a></div>
+      <div class="card-body tight">{% for n in notes %}
+        <a class="dd-note {% if not n.is_read %}unread{% endif %}" href="{% url 'core:notification_open' n.pk %}" style="display:block;padding:10px 14px;border-bottom:1px solid var(--line-2)"><span>{{ n.title }}</span><br><small class="muted">{{ n.message|truncatechars:60 }} · {{ n.created_at|timesince }}</small></a>
+      {% empty %}<p class="muted pad">{% t "No notifications yet." %}</p>{% endfor %}</div>
+    </div>
+    {% if system %}
+    <div class="card">
+      <div class="card-head"><h3>{% icon "shield" 16 %} {% t "System" %}</h3></div>
+      <div class="card-body"><dl class="kv">
+        <dt>{% t "Active users" %}</dt><dd>{{ system.users }}</dd>
+        <dt>{% t "Customers" %}</dt><dd>{{ system.customers }}</dd>
+        <dt>{% t "Failed logins (7 days)" %}</dt><dd>{{ system.failed_logins }}</dd>
+        <dt>{% t "Demo visitors (7 days)" %}</dt><dd>{{ system.demo_week }}</dd>
+        <dt>{% t "Version" %}</dt><dd>v{{ odg_version }}</dd>
+      </dl></div>
+    </div>
+    {% endif %}
+  </div>
+</div>

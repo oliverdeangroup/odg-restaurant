@@ -1,0 +1,23 @@
+{% extends "website/themes/_base.html" %}
+{% comment %}Shared page structure. Themes (bistro / modern / lounge) change it with CSS and a few blocks.{% endcomment %}
+{% block body %}
+{% if look.header_topbar %}{% include "website/themes/_parts.html" with part="topbar" %}{% endif %}
+{% include "website/themes/_parts.html" with part="header" %}
+<main id="main">
+  {% if not_found %}
+    <section class="page-band"><div class="wrap"><h1>404</h1><p>{% t "Page not found." %}</p><a class="sbtn primary" href="/">← {{ brand.name }}</a></div></section>
+  {% elif page %}
+    {% if page.template == "landing" or is_home %}{% if look.hero_enabled and not starts_with_hero %}{% include "website/themes/_parts.html" with part="hero" %}{% endif %}
+    {% elif page.template != "canvas" %}
+      <section class="page-band"><div class="wrap">{% if page.parent %}<a class="crumb" href="{{ page.parent.get_absolute_url }}">{{ page.parent.title }}</a>{% endif %}<h1>{{ page.title }}</h1>{% if page.excerpt %}<p>{{ page.excerpt }}</p>{% endif %}</div></section>
+    {% endif %}
+    {% if page.editor == "builder" %}{{ body_html|safe }}
+    {% else %}<div class="wrap {% if page.template != 'full' %}narrow{% endif %}"><div class="prose page-html">{{ page.content|safe }}</div></div>{% endif %}
+    {% if children %}<div class="wrap"><div class="cards">{% for c in children %}<a class="card-link" href="{{ c.get_absolute_url }}">{% if c.featured_image %}<img src="{{ c.featured_image.url }}" alt="" loading="lazy">{% endif %}<div><h3>{{ c.title }}</h3>{% if c.excerpt %}<p>{{ c.excerpt|truncatewords:22 }}</p>{% endif %}</div></a>{% endfor %}</div></div>{% endif %}
+  {% else %}
+    {% if look.hero_enabled %}{% include "website/themes/_parts.html" with part="hero" %}{% endif %}
+    <section class="bs pad-lg"><div class="bs-in"><div class="prose al-center"><h2>{{ brand.name }}</h2>{% if brand.motto %}<p class="lead">{{ brand.motto }}</p>{% endif %}<p>{% t "Welcome! Create your pages in the dashboard under Website → Pages and choose one as homepage." %}</p></div></div></section>
+  {% endif %}
+</main>
+{% include "website/themes/_parts.html" with part="footer" %}
+{% endblock %}

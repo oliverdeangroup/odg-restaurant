@@ -1,0 +1,51 @@
+{% comment %}Live queue for the bar or kitchen: one ticket per table per submission, oldest first.{% endcomment %}
+<div class="queue-head">
+  <div class="card stat {% if waiting %}hot{% endif %}"><span class="ico">{% icon "clock" 22 %}</span><div><div class="num">{{ waiting }}</div><div class="lbl">{% t "Items waiting" %}</div></div></div>
+  <div class="card stat"><span class="ico gold">{% icon "receipt" 22 %}</span><div><div class="num">{{ tickets|length }}</div><div class="lbl">{% t "Tickets" %}</div></div></div>
+  <div class="card stat"><span class="ico green">{% icon "check" 22 %}</span><div><div class="num">{{ stats.done_today }}</div><div class="lbl">{% t "Completed today" %}</div></div></div>
+  <div class="card stat"><span class="ico red">{% icon "fire" 22 %}</span><div><div class="num">{% if stats.avg_minutes is not None %}{{ stats.avg_minutes }} min{% else %}—{% endif %}</div><div class="lbl">{% t "Average preparation today" %}</div></div></div>
+</div>
+<div class="tickets">
+  {% for t in tickets %}
+  <div class="ticket" data-ticket>
+    <div class="ticket-head">
+      <div class="tno">{% t "Table" %} {{ t.order.table_number }}
+        <small>{% if t.guests|length == 1 and t.guests.0 == 0 %}{% t "Table (shared)" %}{% else %}{% t "Guests" %}: {% for g in t.guests %}{% if g %}#{{ g }}{% else %}{% t "table" %}{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</small>
+        <small>{{ t.order.code }}{% if t.order.waiter %} · {{ t.order.waiter.first_name|default:t.order.waiter.username }}{% endif %}</small>
+      </div>
+      <div class="timer"><span data-since="{{ t.submitted|ts }}" data-due="{{ t.due|ts }}" data-grace="{% widthratio pos_cfg.late_after_minutes 1 60000 %}">0:00</span>
+        <small>{% t "in" %} {{ t.submitted|time:"H:i" }} · {% t "ready" %} ±{{ t.due|time:"H:i" }}</small>
+        <small>{% t "est." %} {{ t.est }} min</small></div>
+    </div>
+    <div class="ticket-items">
+      {% for it in t.items %}
+      <div class="t-item {{ it.status }}">
+        <span class="qty">{{ it.qty }}×</span>
+        <div class="info">
+          <strong>{{ it.name }}</strong>
+          <div class="guest">{% if it.guest_no %}{% t "Guest" %} #{{ it.guest_no }}{% else %}{% t "Table (shared)" %}{% endif %}{% if it.status == "preparing" %} · {% t "Preparing" %}{% endif %}</div>
+          {% if it.options %}<div class="opts">{% for o in it.options %}<span>{{ o }}</span>{% endfor %}</div>{% endif %}
+          {% if it.notes %}<div class="note">“{{ it.notes }}”</div>{% endif %}
+          {% if can_act and it.status == "queued" %}<form method="post" action="{% url 'pos:station_action' station %}" data-ajax class="inline">{% csrf_token %}<input type="hidden" name="item" value="{{ it.pk }}"><button class="start-btn" name="action" value="start">{% t "Start" %}</button></form>{% endif %}
+        </div>
+        {% if can_act %}<form method="post" action="{% url 'pos:station_action' station %}" data-ajax>{% csrf_token %}<input type="hidden" name="item" value="{{ it.pk }}"><button class="done-btn" name="action" value="done" title="{% t 'Completed' %}">{% icon "check" 20 %}</button></form>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% if can_act and t.items|length > 1 %}
+    <div class="ticket-foot"><form method="post" action="{% url 'pos:station_action' station %}" data-ajax>{% csrf_token %}{% for it in t.items %}<input type="hidden" name="item" value="{{ it.pk }}">{% endfor %}<button class="btn ok" name="action" value="done">{% icon "check" 16 %} {% t "Complete all" %} ({{ t.items|length }})</button></form></div>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="card" style="grid-column:1/-1"><div class="empty">{% icon "check" 40 %}<p>{% t "The queue is empty. New orders appear here automatically." %}</p></div></div>
+  {% endfor %}
+</div>
+{% if recent %}
+<div class="card mt">
+  <div class="card-head"><h3>{% icon "undo" 16 %} {% t "Completed in the last 10 minutes" %}</h3></div>
+  <ul class="recent">
+    {% for it in recent %}<li><span><strong>{% t "Table" %} {{ it.order.table_number }}</strong> · {{ it.qty }}× {{ it.name }}{% if it.options %} <span class="muted">({{ it.options|join:", " }})</span>{% endif %}</span>
+      <span class="row" style="gap:8px"><span class="muted">{{ it.ready_at|time:"H:i" }}</span>{% if can_act %}<form method="post" action="{% url 'pos:station_action' station %}" data-ajax>{% csrf_token %}<input type="hidden" name="item" value="{{ it.pk }}"><button class="btn sm ghost" name="action" value="undo">{% icon "undo" 13 %} {% t "Undo" %}</button></form>{% endif %}</span></li>{% endfor %}
+  </ul>
+</div>
+{% endif %}

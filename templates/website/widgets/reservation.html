@@ -1,0 +1,34 @@
+{% if rs.online_reservations %}
+<div class="wg wg-booking" data-booking>
+  {% if d.title %}<h2>{{ d.title }}</h2>{% endif %}
+  {% if d.text %}<p class="muted">{{ d.text }}</p>{% endif %}
+  <form class="bk-form" action="/book/" method="post" novalidate data-slots="/book/slots/">
+    <div class="bk-step">
+      <div class="bk-row">
+        <label>{% t "Date" %}<input type="date" name="date" min="{{ min_date }}" max="{{ max_date }}" value="{{ min_date }}" required></label>
+        <label>{% t "Guests" %}<select name="guests">{% for n in guest_range %}<option value="{{ n }}" {% if n == 2 %}selected{% endif %}>{{ n }}</option>{% endfor %}</select></label>
+      </div>
+      <div class="bk-label">{% t "Time" %}</div>
+      <div class="bk-slots" data-slots-box><span class="muted">{% t "Loading times…" %}</span></div>
+      <input type="hidden" name="time" required>
+    </div>
+    <div class="bk-step bk-details" hidden>
+      <div class="bk-row">
+        <label>{% t "First name" %} *<input name="first_name" autocomplete="given-name" required maxlength="80"></label>
+        <label>{% t "Last name" %} *<input name="last_name" autocomplete="family-name" required maxlength="80"></label>
+      </div>
+      <div class="bk-row">
+        <label>{% t "E-mail" %} *<input type="email" name="email" autocomplete="email" required maxlength="254"></label>
+        <label>{% t "Phone / WhatsApp" %}<input type="tel" name="phone" autocomplete="tel" maxlength="40"></label>
+      </div>
+      <label>{% t "Notes (allergies, occasion …)" %}<textarea name="notes" rows="2" maxlength="500"></textarea></label>
+      <label class="bk-check"><input type="checkbox" name="marketing" value="1"> {% t "Send me news and offers" %}</label>
+      <input class="bk-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button class="sbtn primary bk-submit" type="submit">{% t "Book my table" %}</button>
+    </div>
+    <div class="bk-msg" role="status" aria-live="polite"></div>
+  </form>
+  <p class="bk-note small muted">{% t "Online booking is possible at least {0} hours in advance and up to {1} days ahead." rs.min_hours_ahead rs.max_days_ahead %}</p>
+  <script type="application/json" class="bk-t">{"none": {% tjs "No free tables on this day. Please choose another date or call us." %}, "closed": {% tjs "We are closed on this day." %}, "error": {% tjs "Something went wrong. Please try again or call us." %}, "sending": {% tjs "Sending…" %}}</script>
+</div>
+{% endif %}

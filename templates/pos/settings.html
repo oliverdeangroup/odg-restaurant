@@ -1,0 +1,56 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "POS configuration" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Settings" %} /</div>{% endblock %}
+{% block heading %}{% t "POS configuration" %}{% endblock %}
+{% block content %}
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert error mb">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head"><h2>{% icon "cash" 18 %} {% t "Money & tax (Curaçao)" %}</h2></div>
+      <div class="card-body form-grid">
+        {% include "core/_field.html" with f=form.currency_code %}
+        {% include "core/_field.html" with f=form.currency_symbol %}
+        {% include "core/_field.html" with f=form.tax_name %}
+        {% include "core/_field.html" with f=form.tax_rate %}
+        {% include "core/_field.html" with f=form.prices_include_tax cls="full" %}
+        {% include "core/_field.html" with f=form.service_charge_percent %}
+        {% include "core/_field.html" with f=form.tip_suggestions %}
+        {% include "core/_field.html" with f=form.crib_number %}
+        {% include "core/_field.html" with f=form.kvk_number %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>{% icon "receipt" 18 %} {% t "Bills" %}</h2></div>
+      <div class="card-body form-grid">
+        {% include "core/_field.html" with f=form.default_bill_format %}
+        {% include "core/_field.html" with f=form.bill_prefix %}
+        {% include "core/_field.html" with f=form.next_bill_number %}
+        {% include "core/_field.html" with f=form.bill_header_text cls="full" %}
+        {% include "core/_field.html" with f=form.bill_footer_text cls="full" %}
+        <p class="muted small full" style="margin:0">{% t "Paid bills are numbered without gaps, saved as PDF and can never be deleted. Logo and contact details come from Website → Brand." %}</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>{% icon "pos" 18 %} {% t "Live POS" %}</h2></div>
+      <div class="card-body form-grid">
+        {% include "core/_field.html" with f=form.live_refresh_seconds %}
+        {% include "core/_field.html" with f=form.late_after_minutes %}
+        {% include "core/_field.html" with f=form.order_history_days %}
+        {% include "core/_field.html" with f=form.manager_history_days %}
+        {% include "core/_field.html" with f=form.sound_alerts cls="full" %}
+      </div>
+    </div>
+    <div class="card" id="floor">
+      <div class="card-head"><h2>{% icon "grid" 18 %} {% t "Floor manager" %}</h2><a class="small" href="{% url 'pos:floor_design' %}">{% t "Design the floor" %}</a></div>
+      <div class="card-body form-grid">
+        {% include "core/_field.html" with f=form.floor_width %}
+        {% include "core/_field.html" with f=form.floor_height %}
+        {% include "core/_field.html" with f=form.grid_size %}
+      </div>
+    </div>
+  </div>
+  <div class="card mt"><div class="form-actions" style="border:0"><button class="btn primary">{% icon "check" 16 %} {% t "Save settings" %}</button></div></div>
+</form>
+{% endblock %}

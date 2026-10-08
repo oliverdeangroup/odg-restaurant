@@ -1,0 +1,75 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Table" %} {{ table.number }}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} / <a href="{% url 'pos:tables' %}">{% t "Take orders" %}</a> /</div>{% endblock %}
+{% block heading %}{% t "Table" %} {{ table.number }}{% if table.label %} · {{ table.label }}{% endif %}{% endblock %}
+{% block content %}
+<form method="post" class="card" style="max-width:560px">
+  {% csrf_token %}
+  <div class="card-head"><h2>{% icon "table" 18 %} {% t "Open this table" %}</h2><span class="pill st-free">{{ table.seats }} {% t "seats" %}</span></div>
+  <div class="card-body stack">
+    {% if reservation %}
+    <div class="alert">
+      <strong>{% t "Reservation" %} {{ reservation.start|time:"H:i" }}:</strong> {{ reservation.customer }} · {{ reservation.guests }} {% t "guests" %}
+      {% if reservation.notes %}<br><em>{{ reservation.notes }}</em>{% endif %}
+      {% if reservation.customer.notes %}<br>{% icon "alert" 13 %} {{ reservation.customer.notes }}{% endif %}
+      <label class="field check" style="margin-top:8px"><input class="chk" type="checkbox" name="use_reservation" value="1" checked> <span>{% t "These are the guests of this reservation" %}</span></label>
+    </div>
+    {% endif %}
+    <div class="field">
+      <label>{% t "Number of guests" %}</label>
+      <div class="qty-ctl" data-qty>
+        <button type="button" data-step="-1">−</button><b>{{ reservation.guests|default:2 }}</b><button type="button" data-step="1">+</button>
+        <input type="hidden" name="guests" value="{{ reservation.guests|default:2 }}">
+      </div>
+    </div>
+    {% if perms.customers %}
+    <div class="field">
+      <label>{% t "Customer (optional)" %}</label>
+      <input class="inp" id="cust-q" placeholder="{% t 'Search by name, e-mail or phone' %}" autocomplete="off">
+      <input type="hidden" name="customer" id="cust-id">
+      <div id="cust-results" class="small"></div>
+    </div>
+    {% endif %}
+  </div>
+  <div class="form-actions">
+    <a class="btn" href="{% url 'pos:tables' %}">{% t "Back" %}</a>
+    <button class="btn primary big" style="width:auto">{% icon "check" 16 %} {% t "Open table" %}</button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll("[data-qty]").forEach(function (box) {
+  const out = box.querySelector("b"), inp = box.querySelector("input");
+  box.querySelectorAll("[data-step]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      const v = Math.max(1, Math.min(99, Number(inp.value) + Number(b.dataset.step)));
+      inp.value = v; out.textContent = v;
+    });
+  });
+});
+(function () {
+  const q = document.getElementById("cust-q");
+  if (!q) return;
+  const box = document.getElementById("cust-results"), id = document.getElementById("cust-id");
+  let t;
+  q.addEventListener("input", function () {
+    clearTimeout(t);
+    id.value = "";
+    t = setTimeout(async function () {
+      if (q.value.length < 2) { box.innerHTML = ""; return; }
+      const r = await fetch("{% url 'pos:customer_search' %}?q=" + encodeURIComponent(q.value));
+      const d = await r.json();
+      box.innerHTML = "";
+      d.results.forEach(function (c) {
+        const a = document.createElement("a");
+        a.href = "#"; a.className = "chip"; a.style.margin = "6px 6px 0 0";
+        a.textContent = c.code + " · " + c.name;
+        a.onclick = function (e) { e.preventDefault(); id.value = c.id; q.value = c.name; box.innerHTML = ""; };
+        box.appendChild(a);
+      });
+    }, 250);
+  });
+})();
+</script>
+{% endblock %}

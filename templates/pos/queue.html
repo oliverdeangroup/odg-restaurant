@@ -1,0 +1,9 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block body_class %}kds{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} /</div>{% endblock %}
+{% block heading %}{% if station == "bar" %}{% icon "glass" 22 %}{% else %}{% icon "chef" 22 %}{% endif %} {{ title }} — {% t "live queue" %}{% endblock %}
+{% block actions %}<button class="btn" type="button" onclick="document.documentElement.requestFullscreen && document.documentElement.requestFullscreen()">{% icon "external" 16 %} {% t "Full screen" %}</button>{% endblock %}
+{% block content %}
+<div data-live-src="{{ request.path }}?partial=1">{% include "pos/_queue.html" %}</div>
+{% endblock %}

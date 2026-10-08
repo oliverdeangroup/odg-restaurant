@@ -1,0 +1,30 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Floor manager" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} /</div>{% endblock %}
+{% block heading %}{% t "Floor manager" %}{% endblock %}
+{% block actions %}{% if can_design %}<a class="btn primary" href="{% url 'pos:floor_design' %}">{% icon "edit" 16 %} {% t "Design the floor" %}</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head">
+    <div class="legend">{% for k, l in legend %}<span class="{{ k }}"><i></i>{{ l }}</span>{% endfor %}
+      <span><span class="bdg bar" style="padding:0 5px;border-radius:6px;color:#fff;background:var(--bar-c)">{% icon "glass" 10 %}</span> {% t "Bar" %}</span>
+      <span><span class="bdg kitchen" style="padding:0 5px;border-radius:6px;color:#fff;background:var(--kitchen-c)">{% icon "chef" 10 %}</span> {% t "Kitchen" %}</span>
+    </div>
+    <span class="muted small">{% t "Updates automatically" %}</span>
+  </div>
+  <div class="card-body" data-live-src="{% url 'pos:floor' %}?partial=1">{% include "pos/_floor.html" %}</div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h2>{% icon "calendar" 18 %} {% t "Reservation timeline today" %}</h2><a class="small" href="{% url 'pos:reservations' %}">{% t "All reservations" %}</a></div>
+  <div class="card-body">
+    <div class="timeline">
+      {% for st in states %}
+      <div class="tl-row"><div class="tl-name">#{{ st.t.number }}</div>
+        <div class="tl-track">{% for e in st.timeline %}<span class="tl-res {{ e.r.status }}" style="left:{{ e.left }}%;width:{{ e.width }}%" title="{{ e.r.start|time:'H:i' }} {{ e.r.customer }} ({{ e.r.guests }})">{{ e.r.start|time:"H:i" }} {{ e.r.customer.last_name }}</span>{% endfor %}<span class="tl-now" style="left:{{ now_pct }}%"></span></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

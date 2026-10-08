@@ -1,0 +1,62 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Brand" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Website" %} /</div>{% endblock %}
+{% block heading %}{% t "Restaurant brand" %}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+  <div class="grid g-side">
+    <div>
+      <div class="card">
+        <div class="card-head"><h2>{% icon "chef" 18 %} {% t "Restaurant" %}</h2></div>
+        <div class="card-body form-grid">
+          {% include "core/_field.html" with f=form.name %}
+          {% include "core/_field.html" with f=form.short_name %}
+          {% include "core/_field.html" with f=form.motto cls="full" %}
+          {% include "core/_field.html" with f=form.cuisine %}
+          {% include "core/_field.html" with f=form.price_range %}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>{% icon "phone" 18 %} {% t "Contact details" %}</h2></div>
+        <div class="card-body form-grid">
+          {% include "core/_field.html" with f=form.address cls="full" %}
+          {% include "core/_field.html" with f=form.city %}
+          {% include "core/_field.html" with f=form.country %}
+          {% include "core/_field.html" with f=form.phone %}
+          {% include "core/_field.html" with f=form.whatsapp %}
+          {% include "core/_field.html" with f=form.email %}
+          {% include "core/_field.html" with f=form.website %}
+          {% include "core/_field.html" with f=form.opening_hours cls="full" %}
+          {% include "core/_field.html" with f=form.map_embed_url cls="full" %}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>{% icon "globe" 18 %} {% t "Social media" %}</h2></div>
+        <div class="card-body form-grid">
+          {% include "core/_field.html" with f=form.facebook %}
+          {% include "core/_field.html" with f=form.instagram %}
+          {% include "core/_field.html" with f=form.youtube %}
+          {% include "core/_field.html" with f=form.tiktok %}
+          {% include "core/_field.html" with f=form.tripadvisor %}
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-head"><h3>{% icon "image" 16 %} {% t "Logos" %}</h3></div>
+        <div class="card-body stack">
+          {% if brand.logo %}<div class="logo-prev"><img src="{{ brand.logo.url }}" alt=""></div>{% endif %}
+          {% include "core/_field.html" with f=form.logo %}
+          {% if brand.logo_light %}<div class="logo-prev dark"><img src="{{ brand.logo_light.url }}" alt=""></div>{% endif %}
+          {% include "core/_field.html" with f=form.logo_light %}
+          {% if brand.favicon %}<div class="logo-prev"><img src="{{ brand.favicon.url }}" alt="" style="width:32px"></div>{% endif %}
+          {% include "core/_field.html" with f=form.favicon %}
+          <p class="muted small" style="margin:0">{% t "This is the logo of your restaurant: it is shown on the website, on bills and in the PDF reports. The ODG-RESTAURANT logo of the software itself does not change." %}</p>
+        </div>
+      </div>
+      <div class="card mt"><div class="form-actions" style="border:0"><button class="btn primary">{% icon "check" 16 %} {% t "Save brand" %}</button></div></div>
+    </div>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Reservation" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} / <a href="{% url 'pos:reservations' %}">{% t "Table reservation" %}</a> /</div>{% endblock %}
+{% block heading %}{% if obj.pk %}{% t "Reservation" %} · {{ obj.customer }}{% else %}{% t "New reservation" %}{% endif %}{% endblock %}
+{% block content %}
+<form method="post" novalidate>
+  {% csrf_token %}
+  <input type="hidden" name="customer_id" id="customer_id" value="{{ customer.pk|default:'' }}">
+  <div class="grid g2">
+    <div class="card">
+      <div class="card-head"><h2>{% icon "user" 18 %} {% t "Customer" %}</h2>{% if customer %}<a class="small" href="{% url 'pos:customer' customer.pk %}">{{ customer.code }}</a>{% endif %}</div>
+      <div class="card-body form-grid">
+        {% if not obj.pk %}
+        <div class="field full"><label>{% t "Find an existing customer" %}</label>
+          <input class="inp" id="cust-q" placeholder="{% t 'Search by name, e-mail or phone' %}" autocomplete="off">
+          <div id="cust-results"></div></div>
+        {% endif %}
+        {% if cform.non_field_errors %}<ul class="errorlist full">{% for e in cform.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% include "core/_field.html" with f=cform.first_name %}
+        {% include "core/_field.html" with f=cform.last_name %}
+        {% include "core/_field.html" with f=cform.phone %}
+        {% include "core/_field.html" with f=cform.email %}
+        {% include "core/_field.html" with f=cform.whatsapp %}
+        {% include "core/_field.html" with f=cform.marketing %}
+        {% include "core/_field.html" with f=cform.notes cls="full" %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>{% icon "calendar" 18 %} {% t "Reservation" %}</h2></div>
+      <div class="card-body form-grid">
+        {% if form.non_field_errors %}<ul class="errorlist full">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% include "core/_field.html" with f=form.date %}
+        {% include "core/_field.html" with f=form.time %}
+        {% include "core/_field.html" with f=form.guests %}
+        {% include "core/_field.html" with f=form.duration_minutes %}
+        {% include "core/_field.html" with f=form.table cls="full" %}
+        {% include "core/_field.html" with f=form.status %}
+        {% include "core/_field.html" with f=form.source %}
+        {% include "core/_field.html" with f=form.notes cls="full" %}
+      </div>
+      <div class="form-actions"><a class="btn" href="{% url 'pos:reservations' %}">{% t "Cancel" %}</a><button class="btn primary">{% icon "check" 16 %} {% t "Save" %}</button></div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const q = document.getElementById("cust-q");
+  if (!q) return;
+  const box = document.getElementById("cust-results"), id = document.getElementById("customer_id");
+  let t;
+  q.addEventListener("input", function () {
+    clearTimeout(t);
+    t = setTimeout(async function () {
+      box.innerHTML = "";
+      if (q.value.length < 2) return;
+      const d = await (await fetch("{% url 'pos:customer_search' %}?q=" + encodeURIComponent(q.value))).json();
+      d.results.forEach(function (c) {
+        const a = document.createElement("a");
+        a.href = "#"; a.className = "chip"; a.style.margin = "6px 6px 0 0";
+        a.textContent = c.code + " · " + c.name + (c.phone ? " · " + c.phone : "");
+        a.onclick = function (e) {
+          e.preventDefault();
+          id.value = c.id;
+          const set = (n, v) => { const el = document.querySelector("[name='cu-" + n + "']"); if (el) { if (el.type === "checkbox") el.checked = !!v; else el.value = v || ""; } };
+          set("first_name", c.first_name); set("last_name", c.last_name); set("email", c.email); set("phone", c.phone);
+          set("notes", c.notes); set("whatsapp", c.whatsapp);
+          box.innerHTML = ""; q.value = c.name;
+        };
+        box.appendChild(a);
+      });
+    }, 250);
+  });
+})();
+</script>
+{% endblock %}

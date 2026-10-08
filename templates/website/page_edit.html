@@ -1,0 +1,164 @@
+{% extends "core/base_dashboard.html" %}{% load static %}
+{% block title %}{% if obj.pk %}{{ obj.title }}{% else %}{% t "Add page" %}{% endif %}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{% static 'odg/css/builder.css' %}?v={{ odg_version }}">{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Website" %} / <a href="{% url 'website:pages' %}">{% t "Pages" %}</a> /</div>{% endblock %}
+{% block heading %}{% if obj.pk %}{% t "Edit page" %}{% else %}{% t "Add page" %}{% endif %}{% endblock %}
+{% block actions %}{% if obj.pk %}<a class="btn" href="{{ obj.get_absolute_url }}{% if obj.status != 'published' %}?preview=1{% endif %}" target="_blank">{% icon "eye" 16 %} {% t "Preview" %}</a>{% endif %}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" id="page-form" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert error mb">{{ form.non_field_errors }}</div>{% endif %}
+  <div class="page-top">
+    <input class="inp title-inp" name="title" value="{{ form.title.value|default:'' }}" placeholder="{% t 'Page title' %}" required>
+    <div class="btn-group" id="mode-switch">
+      <button type="button" data-mode="builder" class="{% if form.editor.value != 'html' %}on{% endif %}">{% icon "columns" 14 %} {% t "Builder" %}</button>
+      <button type="button" data-mode="html" class="{% if form.editor.value == 'html' %}on{% endif %}">{% icon "code" 14 %} HTML</button>
+    </div>
+    <input type="hidden" name="editor" id="editor-mode" value="{{ form.editor.value|default:'builder' }}">
+    <span class="pill {% if obj.status == 'published' %}ok{% endif %}">{{ obj.get_status_display|tr }}</span>
+    <button class="btn" name="save" value="1">{% t "Save draft" %}</button>
+    <button class="btn primary" name="publish" value="1">{% icon "send" 15 %} {% if obj.status == "published" %}{% t "Update" %}{% else %}{% t "Publish" %}{% endif %}</button>
+  </div>
+  {% for e in form.title.errors %}<div class="alert error mb">{{ e }}</div>{% endfor %}
+
+  <div class="ptabs" id="ptabs">
+    <button type="button" class="on" data-tab="content">{% icon "layers" 15 %} {% t "Content" %}</button>
+    <button type="button" data-tab="seo">{% icon "search" 15 %} SEO <span class="pill" id="seo-pill">0</span></button>
+    <button type="button" data-tab="settings">{% icon "settings" 15 %} {% t "Page settings" %}</button>
+    {% if revisions %}<button type="button" data-tab="revisions">{% icon "refresh" 15 %} {% t "Revisions" %}</button>{% endif %}
+  </div>
+
+  <div data-pane="content">
+    <div id="pane-builder" class="{% if form.editor.value == 'html' %}hide{% endif %}">{% include "website/_builder.html" %}</div>
+    <div id="pane-html" class="card {% if form.editor.value != 'html' %}hide{% endif %}">
+      <div class="card-head"><h3>{% icon "code" 16 %} {% t "HTML editor" %}</h3><span class="muted small">{% t "Scripts are removed for safety. Use the HTML widget in the builder for small pieces of HTML." %}</span></div>
+      <textarea class="inp code-area" name="content" spellcheck="false" style="border:0;border-radius:0 0 10px 10px">{{ form.content.value|default:'' }}</textarea>
+    </div>
+  </div>
+
+  <div data-pane="seo" class="hide">
+    <div class="grid g-side">
+      <div class="card">
+        <div class="card-body stack">
+          <div class="serp"><div class="serp-url">{{ request.get_host }} › <span id="serp-slug">{{ form.slug.value|default:'' }}</span></div><div class="serp-title" id="serp-title"></div><div class="serp-desc" id="serp-desc"></div></div>
+          {% include "core/_field.html" with f=form.focus_keyword %}
+          <div class="field"><label>{% t "SEO title" %} <span class="muted small" id="mt-count"></span></label>{{ form.meta_title }}<div class="help">{% t "Leave empty to use the page title. Best under 60 characters." %}</div></div>
+          <div class="field"><label>{% t "Meta description" %} <span class="muted small" id="md-count"></span></label>{{ form.meta_description }}<div class="help">{% t "The text Google shows below the title. Best 120–160 characters." %}</div></div>
+          <div class="field"><label>{% t "Address" %}</label><div class="row" style="flex-wrap:nowrap"><span class="muted small">/</span><input class="inp" name="slug" value="{{ form.slug.value|default:'' }}" placeholder="{% t 'auto' %}"><span class="muted small">/</span></div></div>
+          {% include "core/_field.html" with f=form.og_image %}
+          {% include "core/_field.html" with f=form.noindex %}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="seo-score"><span class="seo-ring" id="seo-ring">0</span><div><strong>{% t "SEO score" %}</strong><br><small class="muted">{% t "Updates while you type" %}</small></div></div></div>
+        <div class="card-body"><ul class="seo-checks" id="seo-checks"></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div data-pane="settings" class="hide">
+    <div class="grid g2">
+      <div class="card"><div class="card-body stack">
+        {% include "core/_field.html" with f=form.status %}
+        {% include "core/_field.html" with f=form.template %}
+        {% include "core/_field.html" with f=form.is_homepage %}
+        {% include "core/_field.html" with f=form.parent %}
+        {% include "core/_field.html" with f=form.order %}
+        {% if obj.published_at %}<div class="small muted">{% t "Published" %}: {{ obj.published_at|fdatetime }}</div>{% endif %}
+      </div></div>
+      <div class="card"><div class="card-body stack">
+        {% include "core/_field.html" with f=form.excerpt %}
+        {% if obj.featured_image %}<img src="{{ obj.featured_image.url }}" alt="" style="border-radius:8px;max-height:160px">{% endif %}
+        {% include "core/_field.html" with f=form.featured_image %}
+      </div></div>
+    </div>
+  </div>
+
+  {% if revisions %}
+  <div data-pane="revisions" class="hide">
+    <div class="card"><div class="card-body tight"><table class="tbl"><tbody>
+      {% for r in revisions %}<tr><td>{{ r.created_at|fdatetime }}</td><td class="muted">{{ r.created_by|default:"" }}</td><td class="muted small">{{ r.title }}</td><td class="right"><button class="btn sm" type="submit" form="rev-{{ r.pk }}" data-confirm="{% t 'Restore this version? The current version is kept as a revision.' %}">{% t "Restore" %}</button></td></tr>{% endfor %}
+    </tbody></table></div></div>
+  </div>
+  {% endif %}
+</form>
+{% for r in revisions %}<form id="rev-{{ r.pk }}" method="post" action="{% url 'website:revision_restore' r.pk %}">{% csrf_token %}</form>{% endfor %}
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="{% static 'odg/js/builder.js' %}?v={{ odg_version }}"></script>
+<script>
+(function () {
+  const form = document.getElementById("page-form");
+  // tabs
+  document.querySelectorAll("#ptabs [data-tab]").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll("#ptabs [data-tab]").forEach((x) => x.classList.toggle("on", x === b));
+    document.querySelectorAll("[data-pane]").forEach((p) => p.classList.toggle("hide", p.dataset.pane !== b.dataset.tab));
+    if (b.dataset.tab === "seo") seo();
+  }));
+  // builder / html
+  const mode = document.getElementById("editor-mode");
+  document.querySelectorAll("#mode-switch [data-mode]").forEach((b) => b.addEventListener("click", () => {
+    mode.value = b.dataset.mode;
+    document.querySelectorAll("#mode-switch [data-mode]").forEach((x) => x.classList.toggle("on", x === b));
+    document.getElementById("pane-builder").classList.toggle("hide", b.dataset.mode !== "builder");
+    document.getElementById("pane-html").classList.toggle("hide", b.dataset.mode !== "html");
+  }));
+  document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "s") { e.preventDefault(); form.querySelector("[name=save]").click(); } });
+
+  // SEO score (like Rank Math)
+  const $ = (n) => form.querySelector("[name=" + n + "]");
+  const site = {{ brand.name|jsonattr }};
+  const T = {
+    kw: {% tjs "Set a focus keyword" %}, inTitle: {% tjs "Focus keyword in the SEO title" %}, inDesc: {% tjs "Focus keyword in the meta description" %},
+    inUrl: {% tjs "Focus keyword in the address (URL)" %}, inStart: {% tjs "Focus keyword at the start of the content" %},
+    inHead: {% tjs "Focus keyword in a subheading" %}, len: {% tjs "Content is at least 300 words ({0} now)" %}, tLen: {% tjs "SEO title is 30–60 characters" %},
+    dLen: {% tjs "Meta description is 120–160 characters" %}, alt: {% tjs "All images have alt text" %}, links: {% tjs "Content has links" %},
+    dens: {% tjs "Keyword density 0.5–2.5% ({0}%)" %}
+  };
+  function text() {
+    if (mode.value === "builder" && window.odgBuilder) return window.odgBuilder.text();
+    const t = document.createElement("div"); t.innerHTML = $("content").value; return t.textContent;
+  }
+  function seo() {
+    const kw = ($("focus_keyword").value || "").trim().toLowerCase();
+    const title = ($("meta_title").value || ($("title").value ? $("title").value + " | " + site : site));
+    const desc = $("meta_description").value || $("excerpt").value || "";
+    const slug = ($("slug").value || $("title").value || "").toLowerCase();
+    const body = text(); const words = body.split(/\s+/).filter(Boolean);
+    const low = body.toLowerCase();
+    const count = kw ? (low.match(new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) || []).length : 0;
+    const dens = words.length ? Math.round(count * kw.split(/\s+/).length / words.length * 1000) / 10 : 0;
+    const heads = mode.value === "builder" && window.odgBuilder ? window.odgBuilder.headings() : Array.from(new DOMParser().parseFromString($("content").value, "text/html").querySelectorAll("h2,h3,h4")).map((h) => h.textContent);
+    const alts = mode.value === "builder" && window.odgBuilder ? window.odgBuilder.images() : Array.from(new DOMParser().parseFromString($("content").value, "text/html").querySelectorAll("img")).map((i) => i.alt);
+    const fmt = (s, v) => s.replace("{0}", v);
+    const checks = [
+      [T.kw, !!kw],
+      [T.inTitle, kw && title.toLowerCase().includes(kw)],
+      [T.inDesc, kw && desc.toLowerCase().includes(kw)],
+      [T.inUrl, kw && slug.includes(kw.replace(/\s+/g, "-"))],
+      [T.inStart, kw && low.slice(0, Math.max(200, low.length / 10)).includes(kw)],
+      [T.inHead, kw && heads.some((h) => h.toLowerCase().includes(kw))],
+      [fmt(T.len, words.length), words.length >= 300],
+      [T.tLen, title.length >= 30 && title.length <= 60],
+      [T.dLen, desc.length >= 120 && desc.length <= 160],
+      [T.alt, alts.every((a) => a && a.trim())],
+      [T.links, mode.value === "builder" ? true : /<a\s/i.test($("content").value)],
+      [fmt(T.dens, dens), kw && dens >= 0.5 && dens <= 2.5],
+    ];
+    const score = Math.round(checks.filter((c) => c[1]).length / checks.length * 100);
+    const ring = document.getElementById("seo-ring");
+    ring.textContent = score; ring.className = "seo-ring " + (score >= 80 ? "good" : score >= 50 ? "ok" : "bad");
+    const pill = document.getElementById("seo-pill"); pill.textContent = score; pill.className = "pill " + (score >= 80 ? "ok" : score >= 50 ? "warn" : "err");
+    document.getElementById("seo-checks").innerHTML = checks.map((c) => `<li class="${c[1] ? "pass" : ""}"><span class="mark">${c[1] ? "✓" : "✕"}</span><span>${c[0].replace(/</g, "&lt;")}</span></li>`).join("");
+    document.getElementById("serp-title").textContent = title.length > 62 ? title.slice(0, 60) + "…" : title;
+    document.getElementById("serp-desc").textContent = desc.length > 162 ? desc.slice(0, 160) + "…" : desc;
+    document.getElementById("serp-slug").textContent = $("slug").value;
+    const c1 = document.getElementById("mt-count"), c2 = document.getElementById("md-count");
+    c1.textContent = $("meta_title").value.length + "/60"; c2.textContent = $("meta_description").value.length + "/160";
+  }
+  form.addEventListener("input", () => { clearTimeout(window._seoT); window._seoT = setTimeout(seo, 300); });
+  seo();
+})();
+</script>
+{% endblock %}

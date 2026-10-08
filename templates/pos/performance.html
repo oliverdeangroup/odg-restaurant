@@ -1,0 +1,35 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Staff performance" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} /</div>{% endblock %}
+{% block heading %}{% t "Staff performance" %}{% endblock %}
+{% block content %}
+<div class="card mb"><div class="card-head">
+  <div class="period-nav">
+    <div class="btn-group">
+      <a href="{% qs period='day' %}" class="{% if period == 'day' %}on{% endif %}">{% t "Day" %}</a>
+      <a href="{% qs period='week' %}" class="{% if period == 'week' %}on{% endif %}">{% t "Week" %}</a>
+      <a href="{% qs period='month' %}" class="{% if period == 'month' %}on{% endif %}">{% t "Month" %}</a>
+    </div>
+    <a class="btn sm icon" href="{% qs date=prev|date:'Y-m-d' %}">{% icon "left" 14 %}</a>
+    <span class="label">{% if period == "day" %}{{ start|fdate }}{% else %}{{ start|fdate }} – {{ end|fdate }}{% endif %}</span>
+    <a class="btn sm icon" href="{% qs date=next|date:'Y-m-d' %}">{% icon "right" 14 %}</a>
+  </div>
+</div></div>
+<div class="card">
+  <div class="card-head"><h2>{% icon "users" 18 %} {% t "Service (waiters)" %}</h2></div>
+  <div class="card-body tight table-wrap"><table class="tbl">
+    <thead><tr><th>{% t "Name" %}</th><th class="right">{% t "Tables" %}</th><th class="right">{% t "Guests" %}</th><th class="right">{% t "Items served" %}</th><th class="right">{% t "Avg. pick-up time" %}</th><th class="right">{% t "Sales" %}</th><th class="right">{% t "Tips" %}</th></tr></thead>
+    <tbody>{% for r in waiters %}<tr><td><strong>{{ r.u }}</strong> <span class="pill role-{{ r.u.role }}">{{ r.u.get_role_display|tr }}</span></td><td class="right">{{ r.tables }}</td><td class="right">{{ r.guests }}</td><td class="right">{{ r.served }}</td><td class="right">{% if r.pickup is not None %}{{ r.pickup }} min{% else %}—{% endif %}</td><td class="right money">{{ r.sales|money }}</td><td class="right money">{{ r.tips|money }}</td></tr>
+    {% empty %}<tr><td colspan="7" class="empty">{% t "No service data in this period." %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+<div class="card">
+  <div class="card-head"><h2>{% icon "chef" 18 %} {% t "Bar & kitchen" %}</h2></div>
+  <div class="card-body tight table-wrap"><table class="tbl">
+    <thead><tr><th>{% t "Name" %}</th><th class="right">{% t "Items completed" %}</th><th class="right">{% t "Avg. preparation" %}</th><th class="right">{% t "Late" %}</th><th class="right">{% t "On time" %}</th></tr></thead>
+    <tbody>{% for r in cooks %}<tr><td><strong>{{ r.u }}</strong> <span class="pill role-{{ r.u.role }}">{{ r.u.get_role_display|tr }}</span></td><td class="right">{{ r.items }}</td><td class="right">{% if r.avg is not None %}{{ r.avg }} min{% else %}—{% endif %}</td><td class="right">{{ r.late }}</td><td class="right">{% if r.on_time is not None %}<span class="pill {% if r.on_time >= 90 %}ok{% elif r.on_time >= 70 %}warn{% else %}err{% endif %}">{{ r.on_time }}%</span>{% else %}—{% endif %}</td></tr>
+    {% empty %}<tr><td colspan="5" class="empty">{% t "No bar or kitchen data in this period." %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+<p class="muted small">{% t "Pick-up time: from “Completed” in the bar/kitchen until “Served” by the waiter. On time: completed within the estimated preparation time." %}</p>
+{% endblock %}

@@ -1,0 +1,20 @@
+# --- BEGIN ODG-RESTAURANT ---
+# Add this at the END of /home/restaurant/public_html/.htaccess
+# (keep the cPanel-generated lines above it).
+# LiteSpeed needs an External App called "odgrestaurant" (127.0.0.1:8002) —
+# see deploy/INSTALL.md. HTTPS is forced by cPanel (Domains → Force HTTPS),
+# not here, because NGINX sits in front of LiteSpeed on this server.
+RewriteEngine On
+
+# Plain http → https (NGINX in front tells us the original scheme)
+RewriteCond %{HTTP:X-Forwarded-Proto} =http
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+RequestHeader set X-Forwarded-Proto "https"
+
+# Let cPanel's AutoSSL check pass through
+RewriteRule ^\.well-known/ - [L]
+
+# Everything else goes to ODG-RESTAURANT
+RewriteRule ^(.*)$ http://odgrestaurant/$1 [P,L]
+# --- END ODG-RESTAURANT ---

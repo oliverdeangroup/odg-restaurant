@@ -1,0 +1,25 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Customers" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Users" %} /</div>{% endblock %}
+{% block heading %}{% t "Customers" %}{% endblock %}
+{% block actions %}<a class="btn primary" href="{% url 'pos:customer_new' %}">{% icon "plus" 16 %} {% t "Add customer" %}</a>{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head">
+    <form class="filters" method="get"><div class="search">{% icon "search" 16 %}<input class="inp" name="q" value="{{ q }}" placeholder="{% t 'Name, e-mail, phone or customer ID' %}"></div><button class="btn">{% t "Search" %}</button></form>
+    <span class="muted small">{{ page.paginator.count }} {% t "customers" %}</span>
+  </div>
+  <div class="card-body tight table-wrap">
+    <table class="tbl">
+      <thead><tr><th>{% t "Customer ID" %}</th><th>{% t "Name" %}</th><th>{% t "E-mail" %}</th><th>{% t "Phone / WhatsApp" %}</th><th class="right">{% t "Reservations" %}</th><th class="right">{% t "Orders" %}</th><th></th></tr></thead>
+      <tbody>{% for c in page %}
+        <tr><td><code>{{ c.code }}</code></td><td><a href="{% url 'pos:customer' c.pk %}"><strong>{{ c.first_name }} {{ c.last_name }}</strong></a>{% if c.notes %}<br><small class="muted">{{ c.notes|truncatechars:50 }}</small>{% endif %}</td>
+          <td class="small">{{ c.email }}</td><td class="small">{{ c.phone }}{% if c.phone and c.whatsapp %} {% icon "whatsapp" 12 %}{% endif %}</td>
+          <td class="right">{{ c.n_res }}</td><td class="right">{{ c.n_orders }}</td>
+          <td class="actions"><a class="btn sm" href="{% url 'pos:customer' c.pk %}">{% icon "eye" 14 %} {% t "Profile" %}</a></td></tr>
+      {% empty %}<tr><td colspan="7" class="empty">{% icon "users" 36 %}<p>{% t "No customers found." %}</p></td></tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% include "core/_pager.html" %}
+</div>
+{% endblock %}

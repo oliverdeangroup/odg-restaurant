@@ -1,0 +1,24 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Media" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Website" %} /</div>{% endblock %}
+{% block heading %}{% t "Media library" %}{% endblock %}
+{% block content %}
+<form class="card mb" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="card-body form-grid g3">{% include "core/_form.html" %}</div>
+  <div class="form-actions"><button class="btn primary">{% icon "upload" 16 %} {% t "Upload" %}</button></div>
+</form>
+<div class="gallery media-grid">
+  {% for m in page %}
+  <figure>
+    {% if m.is_image %}<img src="{{ m.file.url }}" alt="{{ m.alt }}" loading="lazy">{% else %}<div class="file-tile">{% icon "file" 36 %}<span>{{ m.file.name|slice:"-4:" }}</span></div>{% endif %}
+    <figcaption title="{{ m.title }}">{{ m.title }}</figcaption>
+    <div class="media-act">
+      <button class="btn sm icon" type="button" title="{% t 'Copy link' %}" onclick="navigator.clipboard.writeText(location.origin + '{{ m.file.url }}'); this.innerHTML='✓'">{% icon "clip" 13 %}</button>
+      <form method="post" action="{% url 'website:media_delete' m.pk %}" class="inline" data-confirm="{% t 'Delete this file?' %}">{% csrf_token %}<button class="btn sm icon danger">{% icon "trash" 13 %}</button></form>
+    </div>
+  </figure>
+  {% empty %}<div class="card empty" style="grid-column:1/-1">{% icon "image" 40 %}<p>{% t "No files yet." %}</p></div>{% endfor %}
+</div>
+{% include "core/_pager.html" %}
+{% endblock %}

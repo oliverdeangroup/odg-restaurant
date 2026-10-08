@@ -1,0 +1,10 @@
+<div class="wg wg-contact">
+  {% if d.title %}<h3>{{ d.title }}</h3>{% endif %}
+  <ul class="contact-list">
+    {% if brand.address %}<li>{% icon "pin" 18 %}<span>{{ brand.address }}<br>{{ brand.city }}{% if brand.country %}, {{ brand.country }}{% endif %}</span></li>{% endif %}
+    {% if brand.phone %}<li>{% icon "phone" 18 %}<a href="tel:{{ brand.phone|cut:' ' }}">{{ brand.phone }}</a></li>{% endif %}
+    {% if brand.whatsapp %}<li>{% icon "whatsapp" 18 %}<a href="https://wa.me/{{ brand.whatsapp|cut:' '|cut:'+'|cut:'-' }}" target="_blank" rel="noopener">{{ brand.whatsapp }}</a></li>{% endif %}
+    {% if brand.email %}<li>{% icon "mail" 18 %}<a href="mailto:{{ brand.email }}">{{ brand.email }}</a></li>{% endif %}
+  </ul>
+  {% if d.show_social %}<div class="social">{% include "website/themes/_parts.html" with part="social" %}</div>{% endif %}
+</div>

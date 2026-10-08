@@ -1,0 +1,108 @@
+{% load static %}<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% t "Try the ODG-RESTAURANT demo" %}</title>
+<meta name="description" content="{% t 'Try the restaurant system as waiter, bartender, chef, manager or owner. No login needed: you get your own private demo restaurant.' %}">
+<link rel="icon" href="{% static 'odg/img/odg-restaurant.svg' %}">
+<link rel="stylesheet" href="{% static 'odg/css/dashboard.css' %}?v={{ odg_version }}">
+<style>
+  body.demo-page { margin: 0; font: 15px/1.6 var(--font); color: var(--text); background: #f4f6fb; }
+  .dp-hero { background: radial-gradient(circle at 15% 0, #1d47b8 0, var(--navy) 45%, #061647 100%); color: #fff; padding: 30px 20px 120px; }
+  .dp-top { max-width: 1120px; margin: 0 auto 40px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .dp-brand { display: flex; align-items: center; gap: 12px; color: #fff; font-weight: 800; letter-spacing: .5px; font-size: 18px; }
+  .dp-brand img { width: 44px; height: 44px; border-radius: 12px; }
+  .dp-brand:hover { text-decoration: none; }
+  .dp-lang a { color: #c9d3f1; font-weight: 600; font-size: 13px; padding: 4px 9px; border-radius: 6px; }
+  .dp-lang a.on { background: var(--gold); color: #1b1b1b; }
+  .dp-hero h1 { max-width: 1120px; margin: 0 auto 12px; font-size: clamp(30px, 5vw, 50px); line-height: 1.1; color: #fff; }
+  .dp-hero p { max-width: 1120px; margin: 0 auto; font-size: 18px; color: #dbe3fb; }
+  .dp-cards { max-width: 1120px; margin: -80px auto 0; padding: 0 20px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+  .dp-card { background: #fff; border-radius: 18px; padding: 22px 18px; box-shadow: 0 20px 50px rgba(10, 30, 80, .14); display: flex; flex-direction: column; border-top: 6px solid var(--c, var(--gold)); }
+  .dp-ico { width: 54px; height: 54px; border-radius: 14px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 14%, #fff); color: var(--c); margin-bottom: 12px; }
+  .dp-card h2 { font-size: 20px; margin: 0 0 2px; }
+  .dp-card .who { color: var(--muted); margin: 0 0 12px; font-size: 13px; }
+  .dp-card ul { list-style: none; padding: 0; margin: 0 0 18px; display: grid; gap: 6px; flex: 1; font-size: 13.5px; }
+  .dp-card li { display: flex; gap: 8px; align-items: flex-start; }
+  .dp-card li .ic { color: var(--ok); margin-top: 3px; }
+  .dp-go { width: 100%; justify-content: center; padding: 12px; font-size: 15px; border-radius: 12px; background: var(--c); border-color: var(--c); color: #fff; }
+  .dp-go:hover { filter: brightness(.94); background: var(--c); }
+  .dp-info { max-width: 1120px; margin: 30px auto 0; padding: 0 20px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 22px; }
+  .dp-box { background: #fff; border-radius: 16px; padding: 22px 24px; border: 1px solid var(--line); }
+  .dp-box h3 { margin-top: 0; }
+  .dp-code { display: flex; gap: 8px; }
+  .dp-code .inp { text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+  .dp-steps { margin: 0; padding-left: 20px; color: #394056; }
+  .dp-current { max-width: 1120px; margin: 20px auto 0; padding: 0 20px; }
+  .dp-foot { text-align: center; color: var(--muted); font-size: 13px; padding: 34px 20px; }
+  @media (max-width: 1060px) { .dp-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 760px) { .dp-cards { grid-template-columns: 1fr 1fr; } .dp-info { grid-template-columns: 1fr; } }
+  @media (max-width: 480px) { .dp-cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="demo-page">
+{% include "core/_icons.html" %}
+<header class="dp-hero">
+  <div class="dp-top">
+    <a class="dp-brand" href="/"><img src="{% static 'odg/img/odg-restaurant.svg' %}" alt="">ODG-RESTAURANT</a>
+    <div class="dp-lang">{% for code, name in languages %}<a href="{% lang_url code %}" class="{% if code == lang %}on{% endif %}">{{ name }}</a>{% endfor %}</div>
+  </div>
+  <h1>{% t "Try ODG-RESTAURANT yourself" %}</h1>
+  <p>{% t "Step into a busy demo restaurant with tables, guests, a full menu, reservations and two months of sales. No login needed: you get your own private copy and can switch between the roles to follow an order from table to kitchen to Cassa." %}</p>
+</header>
+
+<main>
+  {% if expired %}<div class="dp-current"><div class="alert warning">{% t "Your demo session has ended. Start a new one below." %}</div></div>{% endif %}
+  <div class="dp-cards" {% if expired %}style="margin-top:20px"{% endif %}>
+    {% for r in roles %}
+    <div class="dp-card" style="--c:{% if r == 'waiter' %}#0a2a7f{% elif r == 'bartender' %}#0e7c86{% elif r == 'chef' %}#b4122b{% elif r == 'manager' %}#6a33ad{% else %}#b07d00{% endif %}">
+      <div class="dp-ico">{% if r == "waiter" %}{% icon "pos" 28 %}{% elif r == "bartender" %}{% icon "glass" 28 %}{% elif r == "chef" %}{% icon "chef" 28 %}{% elif r == "manager" %}{% icon "eye" 28 %}{% else %}{% icon "chart" 28 %}{% endif %}</div>
+      {% if r == "waiter" %}
+        <h2>{% t "Waiter" %}</h2><p class="who">{% t "Take orders per table and per guest." %}</p>
+        <ul><li>{% icon "check" 14 %} {% t "Live floor with table status" %}</li><li>{% icon "check" 14 %} {% t "Guest #1, Guest #2 … with options like doneness" %}</li><li>{% icon "check" 14 %} {% t "Get a signal when food or drinks are ready" %}</li><li>{% icon "check" 14 %} {% t "Mark items as served" %}</li></ul>
+      {% elif r == "bartender" %}
+        <h2>{% t "Bartender" %}</h2><p class="who">{% t "All drink orders in one live queue." %}</p>
+        <ul><li>{% icon "check" 14 %} {% t "Tickets per table, oldest first" %}</li><li>{% icon "check" 14 %} {% t "Timers and estimated times" %}</li><li>{% icon "check" 14 %} {% t "Mark drinks as completed" %}</li></ul>
+      {% elif r == "chef" %}
+        <h2>{% t "Chef" %}</h2><p class="who">{% t "The kitchen display with every food order." %}</p>
+        <ul><li>{% icon "check" 14 %} {% t "Preparation details: doneness, pasta type, notes" %}</li><li>{% icon "check" 14 %} {% t "Late tickets turn red" %}</li><li>{% icon "check" 14 %} {% t "Mark dishes as completed" %}</li></ul>
+      {% elif r == "manager" %}
+        <h2>{% t "Manager" %}</h2><p class="who">{% t "Run the floor and the Cassa." %}</p>
+        <ul><li>{% icon "check" 14 %} {% t "Live overview of all orders" %}</li><li>{% icon "check" 14 %} {% t "Cassa: split bill, tip, cash or card, PDF bill" %}</li><li>{% icon "check" 14 %} {% t "Reservations and floor designer" %}</li><li>{% icon "check" 14 %} {% t "Staff performance" %}</li></ul>
+      {% else %}
+        <h2>{% t "Owner" %}</h2><p class="who">{% t "The full picture of your restaurant." %}</p>
+        <ul><li>{% icon "check" 14 %} {% t "Profit & Loss per day, week, month, year" %}</li><li>{% icon "check" 14 %} {% t "OB (sales tax) summary for Curaçao" %}</li><li>{% icon "check" 14 %} {% t "PDF reports with your logo" %}</li><li>{% icon "check" 14 %} {% t "Live POS and reservations" %}</li></ul>
+      {% endif %}
+      <form method="post" action="{% url 'core:demo_start' r %}">{% csrf_token %}
+        <button class="btn dp-go">{% icon "right" 16 %} {% if current %}{% t "Continue as" %}{% else %}{% t "Start as" %}{% endif %} {{ r|capfirst|tr|lower }}</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="dp-info">
+    <div class="dp-box">
+      <h3>{% icon "shield" 18 %} {% t "Your own private demo" %}</h3>
+      <ol class="dp-steps">
+        <li>{% t "Choose a role: you get a unique demo session, linked to your device and internet address." %}</li>
+        <li>{% t "Switch role at any time with the yellow bar at the top. Tip: open two browser windows, one as waiter and one as chef." %}</li>
+        <li>{% t "Everything you do is only visible to you. Other visitors have their own copy, and the real restaurant is never touched." %}</li>
+        <li>{% t "Your demo is removed automatically {0} hours after your last visit." hours %}</li>
+      </ol>
+      {% if current %}<p class="small muted" style="margin:12px 0 0">{% t "Your demo code" %}: <strong>{{ current.code }}</strong></p>{% endif %}
+    </div>
+    <div class="dp-box">
+      <h3>{% icon "key" 18 %} {% t "Have a demo code?" %}</h3>
+      {% if error == "code" %}<div class="alert error mb">{% t "This code is not valid or has expired." %}</div>{% endif %}
+      {% if error == "limit" %}<div class="alert error mb">{% t "Too many new demos from your address. Please try again in an hour." %}</div>{% endif %}
+      <form method="post" action="{% url 'core:demo_resume' %}" class="dp-code">{% csrf_token %}
+        <input class="inp" name="code" placeholder="R-XXXXXXX" maxlength="12" required autocomplete="off">
+        <button class="btn primary">{% t "Continue" %}</button>
+      </form>
+      <p class="small muted" style="margin:12px 0 0">{% t "The administrator dashboard is not part of the demo." %}</p>
+    </div>
+  </div>
+</main>
+<div class="dp-foot">© {% now "Y" %} Oliver Dean Group · ODG-RESTAURANT · <a href="/">{% t "Back to the website" %}</a></div>
+</body>
+</html>

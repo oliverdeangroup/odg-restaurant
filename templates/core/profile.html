@@ -1,0 +1,20 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "My profile" %}{% endblock %}
+{% block heading %}{% t "My profile" %}{% endblock %}
+{% block content %}
+<div class="grid g-side">
+  <form class="card" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="card-head"><div class="person"><span class="avatar lg">{% if user.photo %}<img src="{{ user.photo_url }}" alt="">{% else %}{{ user.initials }}{% endif %}</span><div><h2 class="mt0" style="margin:0">{{ user }}</h2><small>{{ user.get_role_display|tr }} · {{ user.username }}</small></div></div></div>
+    <div class="card-body form-grid">{% include "core/_form.html" %}</div>
+    <div class="form-actions"><button class="btn primary">{% t "Save" %}</button></div>
+  </form>
+  <form class="card" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="change_password" value="1">
+    <div class="card-head"><h3>{% icon "key" 16 %} {% t "Change password" %}</h3></div>
+    <div class="card-body stack">{% for f in pw_form %}{% include "core/_field.html" with f=f %}{% endfor %}</div>
+    <div class="form-actions"><button class="btn primary">{% t "Change password" %}</button></div>
+  </form>
+</div>
+{% endblock %}

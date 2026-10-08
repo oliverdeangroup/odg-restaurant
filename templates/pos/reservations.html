@@ -1,0 +1,53 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Table reservation" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} /</div>{% endblock %}
+{% block heading %}{% t "Table reservation" %}{% endblock %}
+{% block actions %}<a class="btn primary" href="{% url 'pos:reservation_new' %}?date={{ ref|date:'Y-m-d' }}">{% icon "plus" 16 %} {% t "New reservation" %}</a>{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-head">
+    <div class="period-nav">
+      <div class="btn-group">
+        <a href="{% qs period='day' %}" class="{% if period == 'day' %}on{% endif %}">{% t "Day" %}</a>
+        <a href="{% qs period='week' %}" class="{% if period == 'week' %}on{% endif %}">{% t "Week" %}</a>
+        <a href="{% qs period='month' %}" class="{% if period == 'month' %}on{% endif %}">{% t "Month" %}</a>
+      </div>
+      <a class="btn sm icon" href="{% qs date=prev|date:'Y-m-d' %}">{% icon "left" 14 %}</a>
+      <span class="label">{% if period == "day" %}{{ start|fdate }}{% else %}{{ start|fdate }} – {{ end|fdate }}{% endif %}</span>
+      <a class="btn sm icon" href="{% qs date=next|date:'Y-m-d' %}">{% icon "right" 14 %}</a>
+      <a class="btn sm" href="{% qs date=today|date:'Y-m-d' %}">{% t "Today" %}</a>
+    </div>
+    <form class="filters" method="get"><input type="hidden" name="period" value="{{ period }}"><input type="hidden" name="date" value="{{ ref|date:'Y-m-d' }}">
+      <div class="search">{% icon "search" 16 %}<input class="inp" name="q" value="{{ q }}" placeholder="{% t 'Name, phone or e-mail' %}"></div>
+      <select class="inp" name="status" onchange="this.form.submit()"><option value="">{% t "Not cancelled" %}</option><option value="all" {% if status == "all" %}selected{% endif %}>{% t "All" %}</option>{% for v, l in statuses %}<option value="{{ v }}" {% if status == v %}selected{% endif %}>{{ l|tr }}</option>{% endfor %}</select>
+    </form>
+  </div>
+  <div class="card-body small muted" style="padding:10px 18px">{{ count }} {% t "reservations" %} · {{ guests }} {% t "guests" %}</div>
+  {% for day, rows in days %}
+  <div class="card-body tight table-wrap" style="border-top:1px solid var(--line)">
+    <div class="section-title" style="padding:12px 18px 4px;margin:0">{{ day|fdate }}</div>
+    <table class="tbl">
+      <thead><tr><th>{% t "Time" %}</th><th>{% t "Customer" %}</th><th>{% t "Phone" %}</th><th>{% t "Table" %} #</th><th>{% t "Guests" %}</th><th>{% t "Status" %}</th><th>{% t "Source" %}</th><th></th></tr></thead>
+      <tbody>{% for r in rows %}
+        <tr>
+          <td><strong>{{ r.start|time:"H:i" }}</strong> <small class="muted">– {{ r.end|time:"H:i" }}</small></td>
+          <td><a href="{% url 'pos:customer' r.customer_id %}"><strong>{{ r.customer.first_name }} {{ r.customer.last_name }}</strong></a>{% if r.notes %}<br><small class="muted">{{ r.notes|truncatechars:60 }}</small>{% endif %}{% if r.customer.notes %}<br><small style="color:var(--err)">{% icon "alert" 11 %} {{ r.customer.notes|truncatechars:50 }}</small>{% endif %}</td>
+          <td class="small">{% if r.customer.phone %}<a href="tel:{{ r.customer.phone|cut:' ' }}">{{ r.customer.phone }}</a>{% if r.customer.whatsapp %} <a href="https://wa.me/{{ r.customer.phone|cut:' '|cut:'+'|cut:'-' }}" target="_blank" rel="noopener" title="WhatsApp">{% icon "whatsapp" 13 %}</a>{% endif %}{% endif %}</td>
+          <td>{% if r.table %}<strong>{{ r.table.number }}</strong>{% else %}<span class="pill warn">{% t "none" %}</span>{% endif %}</td>
+          <td>{{ r.guests }}</td>
+          <td><span class="pill {% if r.status == 'confirmed' %}st-reserved{% elif r.status == 'seated' %}st-busy{% elif r.status == 'completed' %}ok{% elif r.status == 'pending' %}warn{% else %}err{% endif %}">{{ r.get_status_display|tr }}</span></td>
+          <td class="small muted">{{ r.get_source_display|tr }}</td>
+          <td class="actions">
+            <a class="btn sm" href="{% url 'pos:reservation_edit' r.pk %}">{% icon "edit" 14 %}</a>
+            <div class="dd" style="display:inline-block"><button class="btn sm icon" type="button" data-dd>{% icon "down" 14 %}</button>
+              <div class="dd-menu">{% for v, l in statuses %}{% if v != r.status %}<form method="post" action="{% url 'pos:reservation_status' r.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn ghost" style="width:100%;justify-content:flex-start" name="status" value="{{ v }}">{{ l|tr }}</button></form>{% endif %}{% endfor %}</div>
+            </div>
+          </td>
+        </tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% empty %}
+  <div class="empty">{% icon "calendar" 36 %}<p>{% t "No reservations in this period." %}</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% if obj.pk %}{{ obj.name }}{% else %}{% t "Add product" %}{% endif %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} / <a href="{% url 'pos:products' %}">{% t "Products" %}</a> /</div>{% endblock %}
+{% block heading %}{% if obj.pk %}{{ obj.name }}{% else %}{% t "Add product" %}{% endif %}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+  <div class="grid g-side">
+    <div class="card">
+      <div class="card-body form-grid">
+        {% if form.non_field_errors %}<ul class="errorlist full">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        {% include "core/_field.html" with f=form.name %}
+        {% include "core/_field.html" with f=form.category %}
+        {% include "core/_field.html" with f=form.price %}
+        {% include "core/_field.html" with f=form.code %}
+        {% include "core/_field.html" with f=form.description cls="full" %}
+        <div class="section-title">{% t "Preparation" %}</div>
+        {% include "core/_field.html" with f=form.station %}
+        {% include "core/_field.html" with f=form.prep_minutes %}
+        {% include "core/_field.html" with f=form.options_text cls="full" %}
+        <p class="muted small full" style="margin:-6px 0 0">{% t "The waiter chooses these options when ordering, and the chef or bartender sees them on the ticket (e.g. doneness, pasta type, ice)." %}</p>
+      </div>
+      <div class="form-actions" style="justify-content:space-between">
+        {% if obj.pk and obj.active %}<button class="btn danger" name="delete" value="1" data-confirm="{% t 'Take this product off the menu? Old orders keep it.' %}">{% icon "trash" 15 %} {% t "Remove from menu" %}</button>{% else %}<span></span>{% endif %}
+        <span class="row">{% if not obj.pk %}<button class="btn" name="again" value="1">{% t "Save and add another" %}</button>{% endif %}<button class="btn primary">{% icon "check" 16 %} {% t "Save" %}</button></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>{% t "Image & visibility" %}</h3></div>
+      <div class="card-body stack">
+        {% if obj.image %}<img src="{{ obj.image.url }}" alt="" style="border-radius:10px">{% endif %}
+        {% include "core/_field.html" with f=form.image %}
+        {% include "core/_field.html" with f=form.available %}
+        {% include "core/_field.html" with f=form.active %}
+        {% include "core/_field.html" with f=form.show_on_website %}
+        {% include "core/_field.html" with f=form.order %}
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

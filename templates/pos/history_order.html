@@ -1,0 +1,66 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{{ order.code }}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} / <a href="{% url 'pos:history' %}">{% t "Order history" %}</a> /</div>{% endblock %}
+{% block heading %}{% t "Order" %} {{ order.code }}{% endblock %}
+{% block actions %}{% if order.is_open and perms.cassa %}<a class="btn primary" href="{% url 'pos:cassa_order' order.pk %}">{% icon "cash" 16 %} {% t "Cassa" %}</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="grid g-side">
+  <div>
+    <div class="card">
+      <div class="card-head"><h2>{% t "Items" %}</h2><span class="pill {% if order.status == 'paid' %}ok{% elif order.status == 'void' %}err{% endif %}">{{ order.get_status_display|tr }}</span></div>
+      <div class="card-body tight table-wrap">
+        <table class="tbl">
+          <thead><tr><th>{% t "Item" %}</th><th>{% t "Guest" %}</th><th>{% t "Station" %}</th><th>{% t "Submitted" %}</th><th>{% t "Completed" %}</th><th>{% t "Served" %}</th><th class="right">{% t "Amount" %}</th></tr></thead>
+          <tbody>{% for it in items %}
+            <tr {% if it.status == "void" %}style="opacity:.55"{% endif %}>
+              <td><strong>{{ it.qty }}× {{ it.name }}</strong>{% if it.options %}<br><small class="muted">{{ it.options|join:" · " }}</small>{% endif %}{% if it.notes %}<br><small><em>“{{ it.notes }}”</em></small>{% endif %}{% if it.status == "void" %}<br><span class="pill s-void">{% t "Cancelled" %}</span> <small class="muted">{{ it.void_reason }}</small>{% endif %}</td>
+              <td>{% if it.guest_no %}#{{ it.guest_no }}{% else %}{% t "Table" %}{% endif %}</td>
+              <td><span class="pill {{ it.station }}">{{ it.get_station_display|tr }}</span></td>
+              <td class="small nowrap">{{ it.submitted_at|time:"H:i" }}<br><span class="muted">{{ it.added_by|default:"" }}</span></td>
+              <td class="small nowrap">{{ it.ready_at|time:"H:i"|default:"—" }}{% if it.prep_seconds %} <span class="muted">({{ it.prep_seconds|mins }})</span>{% endif %}<br><span class="muted">{{ it.prepared_by|default:"" }}</span></td>
+              <td class="small nowrap">{{ it.served_at|time:"H:i"|default:"—" }}<br><span class="muted">{{ it.served_by|default:"" }}</span></td>
+              <td class="right money">{{ it.line_total|money }}</td>
+            </tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </div>
+    {% if payments %}
+    <div class="card">
+      <div class="card-head"><h2>{% t "Payments" %}</h2></div>
+      <div class="card-body tight table-wrap"><table class="tbl">
+        <thead><tr><th>{% t "Bill no." %}</th><th>{% t "Paid" %}</th><th>{% t "For" %}</th><th>{% t "Method" %}</th><th class="right">{% t "Subtotal" %}</th><th class="right">{% t "Discount" %}</th><th class="right">{{ s.tax_name }}</th><th class="right">{% t "Total" %}</th><th class="right">{% t "Tip" %}</th></tr></thead>
+        <tbody>{% for p in payments %}<tr><td>{{ p.bill_number }}</td><td class="small nowrap">{{ p.paid_at|fdatetime }}<br><span class="muted">{{ p.received_by|default:"" }}</span></td>
+          <td>{% if p.guest_no is not None %}{% if p.guest_no %}{% t "Guest" %} #{{ p.guest_no }}{% else %}{% t "Table (shared)" %}{% endif %}{% else %}{% t "Whole table" %}{% endif %}</td><td>{{ p.get_method_display|tr }}</td>
+          <td class="right money">{{ p.subtotal|money }}</td><td class="right money">{{ p.discount|money }}</td><td class="right money">{{ p.tax_amount|money }}</td><td class="right money"><strong>{{ p.amount|money }}</strong></td><td class="right money">{{ p.tip|money }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+    {% endif %}
+  </div>
+  <div>
+    <div class="card">
+      <div class="card-head"><h3>{% t "Details" %}</h3></div>
+      <div class="card-body"><dl class="kv">
+        <dt>{% t "Order code" %}</dt><dd>{{ order.code }}</dd>
+        <dt>{% t "Table" %}</dt><dd>#{{ order.table_number }}</dd>
+        <dt>{% t "Guests" %}</dt><dd>{{ order.guests }}</dd>
+        <dt>{% t "Waiter" %}</dt><dd>{{ order.waiter|default:"—" }}</dd>
+        <dt>{% t "Opened" %}</dt><dd>{{ order.opened_at|fdatetime }}</dd>
+        <dt>{% t "Closed" %}</dt><dd>{{ order.closed_at|fdatetime|default:"—" }}</dd>
+        {% if order.customer %}<dt>{% t "Customer" %}</dt><dd>{% if perms.customers %}<a href="{% url 'pos:customer' order.customer_id %}">{{ order.customer.code }} · {{ order.customer }}</a>{% else %}{{ order.customer }}{% endif %}</dd>{% endif %}
+        {% if order.reservation %}<dt>{% t "Reservation" %}</dt><dd>{{ order.reservation.start|fdatetime }}</dd>{% endif %}
+        {% if order.status == "paid" %}<dt>{% t "Total" %}</dt><dd class="money">{{ order.total|money }}</dd><dt>{% t "Tip" %}</dt><dd class="money">{{ order.tip|money }}</dd><dt>{% t "Closed by" %}</dt><dd>{{ order.paid_by|default:"—" }}</dd>{% endif %}
+        {% if order.void_reason %}<dt>{% t "Cancelled" %}</dt><dd>{{ order.void_reason }}</dd>{% endif %}
+      </dl></div>
+    </div>
+    {% if bills %}
+    <div class="card">
+      <div class="card-head"><h3>{% icon "receipt" 16 %} {% t "Saved bills" %}</h3></div>
+      <div class="card-body tight"><table class="tbl"><tbody>{% for b in bills %}
+        <tr><td>{% if b.is_receipt %}{% t "Receipt" %} {{ b.number }}{% else %}{% t "Pro forma" %}{% endif %}<br><small class="muted">{{ b.get_fmt_display|tr }} · {{ b.created_at|fdatetime }}</small></td>
+          <td class="actions"><a class="btn sm icon" href="{% url 'pos:bill' b.pk %}" target="_blank">{% icon "printer" 14 %}</a> <a class="btn sm icon" href="{% url 'pos:bill' b.pk %}?download=1">{% icon "download" 14 %}</a></td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+# secrets and local data — never commit
+.env
+DEV-LOGINS.txt
+db.sqlite3
+data/
+run/
+dist/
+staticfiles/
+.venv/
+__pycache__/
+*.pyc
+*.log
+.DS_Store
+.claude/
+RESTAURANT MANAGEMENT SYSTEM.docx

@@ -1,0 +1,46 @@
+<div class="grid g4 mb">
+  <div class="card stat"><span class="ico">{% icon "table" 22 %}</span><div><div class="num">{{ stats.open }}</div><div class="lbl">{% t "Open tables" %} · {{ stats.guests }} {% t "guests" %}</div></div></div>
+  <div class="card stat"><span class="ico" style="background:#def4f5;color:var(--bar-c)">{% icon "glass" 22 %}</span><div><div class="num">{{ stats.bar }}</div><div class="lbl">{% t "Waiting at the bar" %}</div></div></div>
+  <div class="card stat"><span class="ico red">{% icon "chef" 22 %}</span><div><div class="num">{{ stats.kitchen }}</div><div class="lbl">{% t "Waiting in the kitchen" %}</div></div></div>
+  <div class="card stat {% if stats.ready %}hot{% endif %}"><span class="ico gold">{% icon "bell" 22 %}</span><div><div class="num">{{ stats.ready }}</div><div class="lbl">{% t "Ready, not served yet" %}</div></div></div>
+</div>
+<div class="grid g4 mb">
+  <div class="card stat {% if stats.late %}hot{% endif %}"><span class="ico red">{% icon "alert" 22 %}</span><div><div class="num">{{ stats.late }}</div><div class="lbl">{% t "Late tickets" %}</div></div></div>
+  <div class="card stat"><span class="ico green">{% icon "cash" 22 %}</span><div><div class="num">{{ stats.sales|money }}</div><div class="lbl">{% t "Paid today" %} · {{ stats.paid_count }} {% t "bills" %}</div></div></div>
+  <div class="card stat"><span class="ico">{% icon "calendar" 22 %}</span><div><div class="num">{{ stats.reservations }}</div><div class="lbl">{% t "Reservations today" %}</div></div></div>
+  <div class="card stat"><span class="ico gold">{% icon "clock" 22 %}</span><div><div class="num">{% now "H:i" %}</div><div class="lbl">{% t "Last update" %}</div></div></div>
+</div>
+<div class="grid g-side">
+  <div class="card">
+    <div class="card-head"><h2>{% t "All open orders" %}</h2><span class="legend"><span><i style="background:#c9cfdc"></i>{% t "Waiting" %}</span><span class="ready"><i></i>{% t "Ready" %}</span><span class="free"><i></i>{% t "Served" %}</span></span></div>
+    <div class="card-body tight table-wrap">
+      <table class="tbl">
+        <thead><tr><th>{% t "Table" %}</th><th>{% t "Order code" %}</th><th>{% t "Waiter" %}</th><th>{% t "Open" %}</th><th>{% t "Progress" %}</th><th class="right">{% t "Amount" %}</th><th></th></tr></thead>
+        <tbody>
+        {% for o in orders %}
+        <tr>
+          <td><strong>#{{ o.table_number }}</strong> <small class="muted">{{ o.guests }}p</small>{% if o.status == "billing" %} <span class="pill st-billing">{% t "Bill" %}</span>{% endif %}</td>
+          <td class="small">{{ o.code }}{% if o.customer %}<br><span class="muted">{{ o.customer }}</span>{% endif %}</td>
+          <td class="small">{{ o.waiter|default:"—" }}</td>
+          <td class="small nowrap"><span data-since="{{ o.opened_at|ts }}"></span></td>
+          <td>{% with total=o.n_wait|add:o.n_ready|add:o.n_served %}
+            {% if total %}<div class="prog" title="{{ o.n_wait }} / {{ o.n_ready }} / {{ o.n_served }}"><i class="w" style="width:{% widthratio o.n_wait total 100 %}%"></i><i class="r" style="width:{% widthratio o.n_ready total 100 %}%"></i><i class="s" style="width:{% widthratio o.n_served total 100 %}%"></i></div>
+            <small class="muted">{{ o.n_wait }} · {{ o.n_ready }} · {{ o.n_served }}</small>{% else %}<span class="muted small">{% t "No items yet" %}</span>{% endif %}{% endwith %}</td>
+          <td class="right money">{{ o.amount|default:0|money }}</td>
+          <td class="actions">{% if perms.pos_waiter %}<a class="btn sm" href="{% url 'pos:order' o.table_id %}">{% icon "edit" 14 %}</a>{% endif %}{% if perms.cassa %} <a class="btn sm" href="{% url 'pos:cassa_order' o.pk %}">{% icon "cash" 14 %}</a>{% endif %}</td>
+        </tr>
+        {% empty %}<tr><td colspan="7" class="empty">{% t "No open orders right now." %}</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><h3>{% icon "calendar" 16 %} {% t "Next reservations" %}</h3><a class="small" href="{% url 'pos:reservations' %}">{% t "All" %}</a></div>
+    <div class="card-body tight">
+      {% for r in upcoming %}
+      <div class="pick-item"><span class="tno" style="background:var(--st-res-bg);color:var(--st-res)">{{ r.table.number|default:"?" }}</span>
+        <div class="what"><strong>{{ r.start|time:"H:i" }} · {{ r.customer }}</strong><small>{{ r.guests }} {% t "guests" %}{% if r.notes %} · {{ r.notes|truncatechars:40 }}{% endif %}</small></div></div>
+      {% empty %}<p class="muted pad">{% t "No more reservations today." %}</p>{% endfor %}
+    </div>
+  </div>
+</div>

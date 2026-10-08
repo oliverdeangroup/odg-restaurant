@@ -1,0 +1,86 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Cassa" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} /</div>{% endblock %}
+{% block heading %}{% t "Cassa" %}{% if order %} · {% t "Table" %} {{ order.table_number }}{% endif %}{% endblock %}
+{% block actions %}
+{% if can_pay %}<a class="btn" href="{% url 'pos:day_close' %}">{% icon "lock" 16 %} {% t "Close the day" %}</a>{% endif %}
+<a class="btn" href="{% url 'pos:history' %}">{% icon "list" 16 %} {% t "Order history" %}</a>
+{% endblock %}
+{% block content %}
+{% if paid_bill %}
+<div class="paid-banner">{% icon "check" 22 %}
+  <span style="flex:1">{% t "Paid" %}: {% t "Table" %} {{ paid_bill.order.table_number }} · {% t "Bill" %} {{ paid_bill.number }} · <span class="money">{{ paid_bill.total|money }}</span></span>
+  <a class="btn ok" href="{% url 'pos:bill' paid_bill.pk %}" target="_blank">{% icon "printer" 16 %} {% t "Print bill" %}</a>
+  <a class="btn" href="{% url 'pos:bill' paid_bill.pk %}?download=1">{% icon "download" 16 %} {% t "Download" %}</a>
+</div>
+{% endif %}
+{% if not can_pay %}<div class="alert mb">{% icon "lock" 15 %} {% t "Only the manager and the owner can take payments. You can view the Cassa and its history." %}</div>{% endif %}
+<div class="cassa-grid">
+  <div class="card" data-live-src="{% if order %}{% url 'pos:cassa_order' order.pk %}{% else %}{% url 'pos:cassa' %}{% endif %}?partial=list">{% include "pos/_cassa_list.html" %}</div>
+  <div id="cassa-detail" {% if order %}data-live-src="{% url 'pos:cassa_order' order.pk %}?partial=detail"{% endif %}>
+    {% if order %}{% include "pos/_cassa_detail.html" %}
+    {% else %}<div class="card"><div class="empty">{% icon "cash" 40 %}<p>{% t "Choose a table on the left to see the bill." %}</p></div></div>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  const box = document.getElementById("cassa-detail");
+  if (!box) return;
+  const T = {whole: {% tjs "whole table" %}, guest: {% tjs "Guest" %}, shared: {% tjs "Table (shared)" %}};
+  function bind() {
+    const form = document.getElementById("pay-form");
+    const raw = document.getElementById("pay-data");
+    if (!form || !raw) return;
+    const D = JSON.parse(raw.textContent);
+    let sub = Number(D.sub);
+    const $ = (id) => document.getElementById(id);
+    const fmt = (v) => D.money + " " + (Math.round(v * 100) / 100).toFixed(2);
+    const r2 = (v) => Math.round(v * 100) / 100;
+    function totals() {
+      const disc = Math.min(Math.max(Number($("f-disc").value) || 0, 0), sub);
+      const after = sub - disc;
+      const svc = r2(after * Number(D.svc) / 100);
+      const base = after + svc, rate = Number(D.rate);
+      let tax, total;
+      if (D.incl) { tax = r2(base * rate / (100 + rate)); total = base; } else { tax = r2(base * rate / 100); total = base + tax; }
+      return {disc, svc, tax, total: r2(total)};
+    }
+    function show() {
+      const t = totals(), tip = Math.max(Number($("f-tip").value) || 0, 0);
+      $("s-sub").textContent = fmt(sub);
+      $("s-disc").textContent = t.disc ? "− " + fmt(t.disc) : fmt(0);
+      if ($("s-svc")) $("s-svc").textContent = fmt(t.svc);
+      $("s-tax").textContent = fmt(t.tax);
+      $("s-tip").textContent = fmt(tip);
+      $("s-total").textContent = fmt(t.total + tip);
+      const cash = form.querySelector("[name=method]:checked") && form.querySelector("[name=method]:checked").value === "cash";
+      $("cash-box").classList.toggle("hide", !cash);
+      const recv = Number($("f-recv").value) || 0;
+      $("s-change").textContent = cash && recv ? fmt(Math.max(recv - t.total - tip, 0)) : "—";
+      return t;
+    }
+    form.addEventListener("input", () => { box.dataset.dirty = "1"; show(); });
+    form.addEventListener("change", () => { box.dataset.dirty = "1"; show(); });
+    form.querySelectorAll("[data-tip]").forEach((b) => b.addEventListener("click", () => {
+      $("f-tip").value = (r2(totals().total * Number(b.dataset.tip) / 100)).toFixed(2); box.dataset.dirty = "1"; show();
+    }));
+    box.querySelectorAll("[data-pick-guest]").forEach((b) => b.addEventListener("click", () => {
+      $("pay-guest").value = b.dataset.pickGuest; sub = Number(b.dataset.sub);
+      const g = Number(b.dataset.pickGuest);
+      $("pay-who").textContent = g ? T.guest + " #" + g : T.shared;
+      $("pay-all").classList.remove("hide"); box.dataset.dirty = "1";
+      $("f-tip").value = 0; show(); form.scrollIntoView({behavior: "smooth", block: "start"});
+    }));
+    $("pay-all").addEventListener("click", () => {
+      $("pay-guest").value = "all"; sub = Number(D.sub); $("pay-who").textContent = T.whole; $("pay-all").classList.add("hide"); show();
+    });
+    form.addEventListener("submit", () => { box.dataset.dirty = "0"; });
+    show();
+  }
+  bind();
+  box.addEventListener("live:updated", bind);
+})();
+</script>
+{% endblock %}

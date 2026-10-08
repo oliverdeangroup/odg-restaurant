@@ -1,0 +1,68 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}SEO{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Website" %} /</div>{% endblock %}
+{% block heading %}SEO{% endblock %}
+{% block actions %}<a class="btn" href="/sitemap.xml" target="_blank">sitemap.xml</a><a class="btn" href="/robots.txt" target="_blank">robots.txt</a>{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+  <div class="grid g-side">
+    <div>
+      <div class="card">
+        <div class="card-head"><h2>{% icon "search" 18 %} {% t "Search results" %}</h2></div>
+        <div class="card-body form-grid">
+          {% include "core/_field.html" with f=form.site_title %}
+          {% include "core/_field.html" with f=form.title_separator %}
+          {% include "core/_field.html" with f=form.meta_description cls="full" %}
+          {% include "core/_field.html" with f=form.meta_keywords cls="full" %}
+          {% include "core/_field.html" with f=form.default_og_image %}
+          {% include "core/_field.html" with f=form.schema_type %}
+          {% include "core/_field.html" with f=form.canonical_domain cls="full" %}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>{% icon "shield" 18 %} {% t "Indexing" %}</h2></div>
+        <div class="card-body form-grid">
+          {% include "core/_field.html" with f=form.allow_indexing cls="full" %}
+          {% include "core/_field.html" with f=form.sitemap_enabled cls="full" %}
+          {% include "core/_field.html" with f=form.robots_extra cls="full" %}
+          {% include "core/_field.html" with f=form.breadcrumbs cls="full" %}
+          {% include "core/_field.html" with f=form.redirects cls="full" %}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h2>{% t "Google & Bing" %}</h2></div>
+        <div class="card-body form-grid">
+          {% include "core/_field.html" with f=form.google_verification %}
+          {% include "core/_field.html" with f=form.bing_verification %}
+          {% include "core/_field.html" with f=form.google_analytics_id %}
+        </div>
+        <div class="form-actions"><button class="btn primary">{% icon "check" 16 %} {% t "Save SEO settings" %}</button></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-head"><h3>{% t "Checks" %}</h3><span class="pill {% if issues %}warn{% else %}ok{% endif %}">{{ issues|length }}</span></div>
+        <div class="card-body tight"><table class="tbl"><tbody>
+          {% for p, msg in issues %}<tr><td><a href="{% url 'website:page_edit' p.pk %}">{{ p.title }}</a><br><small class="muted">{{ msg }}</small></td></tr>
+          {% empty %}<tr><td class="pad">{% icon "check" 16 %} {% t "All published pages look good." %}</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>{% t "Built in" %}</h3></div>
+        <div class="card-body small muted">
+          <ul style="padding-left:18px;margin:0">
+            <li>{% t "Title, description and focus keyword per page, with an SEO score like Rank Math" %}</li>
+            <li>{% t "301 redirects" %}</li>
+            <li>{% t "Automatic sitemap.xml and robots.txt" %}</li>
+            <li>{% t "Canonical links" %}</li>
+            <li>{% t "Open Graph & Twitter cards for sharing" %}</li>
+            <li>{% t "Restaurant structured data (schema.org): address, phone, cuisine, opening hours and reservations" %}</li>
+            <li>{% t "Fast pages, mobile friendly, HTTPS" %}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

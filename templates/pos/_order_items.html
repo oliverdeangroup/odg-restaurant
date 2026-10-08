@@ -1,0 +1,37 @@
+{% comment %}Items already sent to bar/kitchen, with live status. Re-loaded by live.js.{% endcomment %}
+<div class="card-head">
+  <h2>{% icon "send" 16 %} {% t "Sent items" %}</h2>
+  {% if ready_count %}<form method="post" action="{% url 'pos:items_action' order.pk %}" data-ajax>{% csrf_token %}<button class="btn sm ok" name="action" value="serve_all">{% icon "check" 14 %} {% t "Serve all ready" %} ({{ ready_count }})</button></form>{% endif %}
+</div>
+<div class="card-body" style="padding-top:4px">
+  {% for guest, items in groups.items %}
+  <div class="sent-group">
+    <h4><span>{% if guest %}{% t "Guest" %} #{{ guest }}{% else %}{% t "Table (shared)" %}{% endif %}</span></h4>
+    {% for it in items %}
+    <div class="sent-line {% if it.status == 'ready' %}ready{% endif %}">
+      <span class="qty">{{ it.qty }}×</span>
+      <div class="info">
+        <strong>{{ it.name }}</strong>
+        {% if it.options %}<small>{{ it.options|join:" · " }}</small>{% endif %}
+        {% if it.notes %}<small><em>“{{ it.notes }}”</em></small>{% endif %}
+        <small><span class="pill s-{{ it.status }}">{% if it.status == "ready" %}{% icon "bell" 11 %} {% t "Ready to pick up" %}{% else %}{{ it.get_status_display|tr }}{% endif %}</span>
+          <span class="pill {{ it.station }}">{{ it.get_station_display|tr }}</span>
+          {% if it.status == "queued" or it.status == "preparing" %}<span data-since="{{ it.submitted_at|ts }}" data-due="{{ it.due_at|ts }}"></span>{% endif %}
+          {% if it.paid %}<span class="pill ok">{% t "Paid" %}</span>{% endif %}</small>
+      </div>
+      <span class="money small">{{ it.line_total|money }}</span>
+      {% if it.status == "ready" %}
+      <form method="post" action="{% url 'pos:items_action' order.pk %}" data-ajax>{% csrf_token %}<input type="hidden" name="item" value="{{ it.pk }}"><button class="btn sm ok" name="action" value="serve" title="{% t 'Served' %}">{% icon "check" 14 %}</button></form>
+      {% elif it.status == "queued" and not it.paid or can_void_any and it.status != "served" and not it.paid %}
+      <form method="post" action="{% url 'pos:items_action' order.pk %}" data-ajax data-confirm="{% t 'Cancel this item?' %}">{% csrf_token %}<input type="hidden" name="item" value="{{ it.pk }}"><input type="hidden" name="reason" value="Cancelled by {{ user.username }}"><button class="btn sm icon ghost danger" name="action" value="void" title="{% t 'Cancel' %}">{% icon "x" 14 %}</button></form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% empty %}
+  <p class="muted" style="margin:6px 0">{% t "Nothing sent yet. Add items from the menu." %}</p>
+  {% endfor %}
+  {% if groups %}
+  <div class="total-row"><span>{% t "Total so far" %}</span><span class="money">{{ totals.total|money }}</span></div>
+  {% endif %}
+</div>

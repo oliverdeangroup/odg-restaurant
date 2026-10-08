@@ -1,0 +1,3 @@
+<section class="bs pad-{{ sec.style.padding }} w-{{ sec.style.width }} al-{{ sec.style.align }}{% if sec.style.dark %} dark{% endif %}{% if sec.style.image %} has-img{% endif %}"{% if sec.style.anchor %} id="{{ sec.style.anchor }}"{% endif %} style="{% if sec.style.bg %}background-color:{{ sec.style.bg }};{% endif %}{% if sec.style.image %}background-image:url('{{ sec.style.image }}');{% endif %}--ov:{{ sec.style.overlay|default:0 }}">
+  <div class="bs-in"><div class="bs-grid">{% for c in cols %}<div class="bs-col span-{{ c.span }}">{{ c.html|safe }}</div>{% endfor %}</div></div>
+</section>

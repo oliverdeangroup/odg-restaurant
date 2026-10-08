@@ -1,0 +1,6 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "No access" %}{% endblock %}
+{% block heading %}{% t "No access" %}{% endblock %}
+{% block content %}
+<div class="card"><div class="empty">{% icon "lock" 40 %}<p>{% t "You don't have permission to open this page." %}</p><a class="btn primary" href="{% url 'core:dashboard' %}">{% t "Back to my dashboard" %}</a></div></div>
+{% endblock %}

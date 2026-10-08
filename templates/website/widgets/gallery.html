@@ -1,0 +1,1 @@
+{% if d.images %}<div class="wg wg-gallery cols-{{ d.columns }}">{% for i in d.images %}<a href="{{ i.src }}" target="_blank" rel="noopener"><img src="{{ i.src }}" alt="{{ i.alt }}" loading="lazy"></a>{% endfor %}</div>{% endif %}

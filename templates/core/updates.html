@@ -1,0 +1,77 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% t "Updates" %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Settings" %} /</div>{% endblock %}
+{% block heading %}{% t "Updates" %}{% endblock %}
+{% block content %}
+<div class="grid g-side">
+  <div>
+    {% if preview %}
+    <div class="card mb" style="border-color:var(--gold)">
+      <div class="card-head"><h2>{% t "Ready to install" %}: v{{ preview.version }}</h2><span class="muted">{% t "Installed now" %}: v{{ preview.current }}</span></div>
+      <div class="card-body stack">
+        {% if preview.notes %}<p style="white-space:pre-line;margin:0">{{ preview.notes }}</p>{% endif %}
+        <p class="muted mt0">{% t "{0} files will be installed." preview.files|length %}{% if preview.delete %} {% t "{0} old files will be removed." preview.delete|length %}{% endif %}</p>
+        {% if preview.is_older %}<div class="alert warning">{% t "This version is not newer than the installed version." %}</div>{% endif %}
+        <div class="alert">{% icon "shield" 16 %} {% t "Before installing, a full backup of all data and the current code is made automatically. Users, orders, bills, financial records and all other data are never touched by an update." %}</div>
+        {% if preview.destructive %}<div class="alert error"><strong>{% t "Warning" %}:</strong> {% t "This update removes database tables or fields" %}: <code>{{ preview.destructive|join:", " }}</code></div>{% endif %}
+      </div>
+      <form method="post" action="{% url 'core:update_apply' %}" class="form-actions" style="justify-content:space-between">
+        {% csrf_token %}
+        {% if preview.destructive %}<label class="field check"><input class="chk" type="checkbox" name="allow_destructive" value="1" required> <span>{% t "I understand. Install anyway." %}</span></label>{% endif %}
+        <div class="row" style="margin-left:auto">
+          <button class="btn" name="action" value="cancel">{% t "Cancel" %}</button>
+          <button class="btn primary" name="action" value="apply" data-confirm="{% t 'Install this update now?' %}">{% icon "refresh" 16 %} {% t "Install update" %}</button>
+        </div>
+      </form>
+    </div>
+    {% else %}
+    <div class="card mb">
+      <div class="card-head"><h2>{% t "Upload an update" %}</h2><span class="pill navy">{% t "Installed" %}: v{{ version }}</span></div>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="card-body stack">
+          <p class="muted mt0">{% t "Upload the ODG-RESTAURANT update package (.zip). You will see what is in it before anything is installed." %}</p>
+          {% include "core/_field.html" with f=form.package %}
+        </div>
+        <div class="form-actions"><button class="btn primary">{% icon "upload" 16 %} {% t "Upload and check" %}</button></div>
+      </form>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-head"><h2>{% t "Update history" %}</h2></div>
+      <div class="card-body tight table-wrap">
+        <table class="tbl">
+          <thead><tr><th>{% t "Version" %}</th><th>{% t "Date" %}</th><th>{% t "By" %}</th><th>{% t "Status" %}</th><th></th></tr></thead>
+          <tbody>{% for u in history %}
+            <tr><td><strong>v{{ u.version }}</strong> <small class="muted">← v{{ u.previous_version }}</small></td><td class="nowrap">{{ u.created_at|fdatetime }}</td><td>{{ u.uploaded_by|default:"—" }}</td>
+              <td><span class="pill {% if u.status == 'applied' %}ok{% elif u.status == 'failed' %}err{% endif %}">{{ u.get_status_display|tr }}</span></td>
+              <td class="right">{% if u.log %}<button class="btn sm" type="button" data-modal="log-{{ u.pk }}">{% t "Log" %}</button>
+                <div class="modal" id="log-{{ u.pk }}"><div class="modal-box wide"><div class="modal-head"><h2>v{{ u.version }}</h2><button class="modal-close" type="button">{% icon "x" 18 %}</button></div><div class="modal-body"><pre style="white-space:pre-wrap;font-size:12px;max-height:60vh;overflow:auto;text-align:left">{{ u.log }}</pre></div></div></div>{% endif %}</td></tr>
+          {% empty %}<tr><td colspan="5" class="empty">{% t "No updates installed yet." %}</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="card">
+      <div class="card-head"><h3>{% icon "shield" 16 %} {% t "Backups" %}</h3></div>
+      <div class="card-body tight"><table class="tbl"><tbody>
+        {% for b in backups %}<tr><td class="small" style="word-break:break-all">{{ b.name }}</td><td class="right"><a class="btn sm icon" href="{% url 'core:backup_download' b.name %}" title="{% t 'Download' %}">{% icon "download" 15 %}</a></td></tr>
+        {% empty %}<tr><td class="muted pad">{% t "No backups yet. One is made before every update." %}</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>{% t "How updates work" %}</h3></div>
+      <div class="card-body small muted">
+        <ol style="padding-left:18px;margin:0">
+          <li>{% t "Upload the .zip package." %}</li>
+          <li>{% t "Check the version and notes." %}</li>
+          <li>{% t "Click Install: a backup is made, new files are copied and the database is upgraded." %}</li>
+          <li>{% t "If something fails, the previous version is restored automatically." %}</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

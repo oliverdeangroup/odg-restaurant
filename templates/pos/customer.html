@@ -1,0 +1,48 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% if obj.pk %}{{ obj }}{% else %}{% t "Add customer" %}{% endif %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Users" %} / <a href="{% url 'pos:customers' %}">{% t "Customers" %}</a> /</div>{% endblock %}
+{% block heading %}{% if obj.pk %}{{ obj }} <small class="muted" style="font-size:14px">{{ obj.code }}</small>{% else %}{% t "Add customer" %}{% endif %}{% endblock %}
+{% block actions %}{% if obj.pk and perms.reservations %}<a class="btn primary" href="{% url 'pos:reservation_new' %}?customer={{ obj.pk }}">{% icon "calendar" 16 %} {% t "New reservation" %}</a>{% endif %}{% endblock %}
+{% block content %}
+<div class="grid {% if obj.pk %}g-side{% endif %}">
+  <div>
+    {% if obj.pk %}
+    <div class="grid g3 mb">
+      <div class="card stat"><span class="ico">{% icon "calendar" 20 %}</span><div><div class="num">{{ reservations|length }}</div><div class="lbl">{% t "Reservations" %}</div></div></div>
+      <div class="card stat"><span class="ico green">{% icon "receipt" 20 %}</span><div><div class="num">{{ visits }}</div><div class="lbl">{% t "Paid visits" %}</div></div></div>
+      <div class="card stat"><span class="ico gold">{% icon "cash" 20 %}</span><div><div class="num">{{ spent|money }}</div><div class="lbl">{% t "Total spent" %}</div></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>{% icon "calendar" 18 %} {% t "Reservation history" %}</h2></div>
+      <div class="card-body tight table-wrap"><table class="tbl">
+        <thead><tr><th>{% t "Date" %}</th><th>{% t "Table" %} #</th><th>{% t "Guests" %}</th><th>{% t "Status" %}</th><th>{% t "Source" %}</th><th></th></tr></thead>
+        <tbody>{% for r in reservations %}<tr><td>{{ r.start|fdatetime }}</td><td>{{ r.table.number|default:"—" }}</td><td>{{ r.guests }}</td><td><span class="pill">{{ r.get_status_display|tr }}</span></td><td class="small muted">{{ r.get_source_display|tr }}</td><td class="actions">{% if perms.reservations %}<a class="btn sm" href="{% url 'pos:reservation_edit' r.pk %}">{% icon "edit" 14 %}</a>{% endif %}</td></tr>
+        {% empty %}<tr><td colspan="6" class="empty">{% t "No reservations yet." %}</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>{% icon "receipt" 18 %} {% t "Past orders" %}</h2></div>
+      <div class="card-body tight table-wrap"><table class="tbl">
+        <thead><tr><th>{% t "Order code" %}</th><th>{% t "Date" %}</th><th>{% t "Table" %}</th><th>{% t "Status" %}</th><th class="right">{% t "Total" %}</th></tr></thead>
+        <tbody>{% for o in orders %}<tr><td>{% if perms.history %}<a href="{% url 'pos:history_order' o.pk %}">{{ o.code }}</a>{% else %}{{ o.code }}{% endif %}</td><td>{{ o.opened_at|fdatetime }}</td><td>#{{ o.table_number }}</td><td><span class="pill">{{ o.get_status_display|tr }}</span></td><td class="right money">{{ o.total|money }}</td></tr>
+        {% empty %}<tr><td colspan="5" class="empty">{% t "No orders yet." %}</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+    {% endif %}
+  </div>
+  <div>
+    <form method="post" class="card" novalidate>{% csrf_token %}
+      <div class="card-head"><h3>{% icon "user" 16 %} {% t "Customer details" %}</h3></div>
+      <div class="card-body stack">{% for f in form %}{% include "core/_field.html" with f=f %}{% endfor %}</div>
+      <div class="form-actions"><button class="btn primary">{% icon "check" 16 %} {% t "Save" %}</button></div>
+    </form>
+    {% if obj.pk and tables %}
+    <div class="card">
+      <div class="card-head"><h3>{% icon "table" 16 %} {% t "Table history" %}</h3></div>
+      <div class="card-body tight"><table class="tbl"><tbody>{% for t in tables %}<tr><td>{% t "Table" %} #{{ t.table_number }}</td><td class="right">{{ t.n }}×</td></tr>{% endfor %}</tbody></table></div>
+    </div>
+    {% endif %}
+    {% if obj.pk %}<p class="muted small center">{% t "Customer since" %} {{ obj.created_at|fdate }}</p>{% endif %}
+  </div>
+</div>
+{% endblock %}

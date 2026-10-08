@@ -1,0 +1,25 @@
+{% extends "core/base_dashboard.html" %}
+{% block title %}{% if obj.pk %}{{ obj.description }}{% else %}{% t "Add expense" %}{% endif %}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Finance" %} / <a href="{% url 'finance:expenses' %}">{% t "Expenses" %}</a> /</div>{% endblock %}
+{% block heading %}{% if obj.pk %}{% t "Edit expense" %}{% else %}{% t "Add expense" %}{% endif %}{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="card" style="max-width:760px" novalidate>
+  {% csrf_token %}
+  <div class="card-body form-grid">
+    {% include "core/_form.html" %}
+    <div class="full row"><span class="muted small">{% t "OB included at" %} {{ s.tax_rate }}%:</span><button class="btn sm" type="button" id="calc-ob">{% t "Calculate" %}</button></div>
+  </div>
+  <div class="form-actions" style="justify-content:space-between">
+    {% if obj.pk %}<button class="btn danger" name="delete" value="1" data-confirm="{% t 'Delete this expense?' %}">{% icon "trash" 15 %} {% t "Delete" %}</button>{% else %}<span></span>{% endif %}
+    <button class="btn primary">{% icon "check" 16 %} {% t "Save" %}</button>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById("calc-ob").addEventListener("click", function () {
+  const a = Number(document.querySelector("[name=amount]").value) || 0, r = {{ s.tax_rate|stringformat:"s" }};
+  document.querySelector("[name=tax_amount]").value = (Math.round(a * r / (100 + r) * 100) / 100).toFixed(2);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "core/base_dashboard.html" %}{% load static %}
+{% block title %}{% t "Table" %} {{ table.number }}{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "POS" %} / <a href="{% url 'pos:tables' %}">{% t "Take orders" %}</a> / {{ order.code }}</div>{% endblock %}
+{% block heading %}{% t "Table" %} {{ table.number }}{% if table.label %} · {{ table.label }}{% endif %}{% if order.customer %} <small class="muted" style="font-size:14px">· {{ order.customer }}</small>{% endif %}{% endblock %}
+{% block actions %}
+<button class="btn" type="button" data-modal="move-modal">{% icon "move" 16 %} {% t "Move table" %}</button>
+<form method="post" action="{% url 'pos:items_action' order.pk %}" class="inline">{% csrf_token %}<button class="btn" name="action" value="bill" {% if order.status == "billing" %}disabled{% endif %}>{% icon "receipt" 16 %} {% if order.status == "billing" %}{% t "Bill requested" %}{% else %}{% t "Request bill" %}{% endif %}</button></form>
+{% if can_cassa %}<a class="btn primary" href="{% url 'pos:cassa_order' order.pk %}">{% icon "cash" 16 %} {% t "Cassa" %}</a>{% endif %}
+{% endblock %}
+{% block content %}
+<div class="order-grid">
+  <div class="card">
+    <div class="card-head">
+      <div class="cat-crumbs" id="crumbs"></div>
+      <div class="search" style="min-width:200px">{% icon "search" 16 %}<input class="inp" id="prod-search" placeholder="{% t 'Search the menu' %}" autocomplete="off"></div>
+    </div>
+    <div class="card-body">
+      <div class="cat-tiles mb" id="cat-tiles"></div>
+      <div class="prod-tiles" id="prod-tiles"></div>
+      <p class="muted center hide" id="no-prod">{% t "No products found." %}</p>
+    </div>
+  </div>
+
+  <div class="menu-panel">
+    <div class="card">
+      <div class="card-head">
+        <h2>{% icon "receipt" 16 %} {% t "New items" %}</h2>
+        <span class="muted small">{{ order.guests }} {% t "guests" %} · {% t "since" %} {{ order.opened_at|time:"H:i" }}</span>
+      </div>
+      <div class="card-body" style="padding-bottom:6px">
+        <div class="guest-tabs" id="guest-tabs"></div>
+        <div id="cart" class="mt"></div>
+      </div>
+      <div class="submit-bar">
+        <div class="total-row mb" style="padding:0"><span>{% t "New items" %}: <span id="cart-count">0</span></span><span class="money" id="cart-total"></span></div>
+        <button class="btn primary big" id="submit-btn" disabled>{% icon "send" 17 %} {% t "Submit to bar & kitchen" %}</button>
+      </div>
+    </div>
+    <div class="card" data-live-src="{% url 'pos:order' table.pk %}?partial=1">{% include "pos/_order_items.html" %}</div>
+  </div>
+</div>
+
+<div class="modal" id="opt-modal"><div class="modal-box">
+  <div class="modal-head"><h2 id="opt-title"></h2><button class="modal-close" type="button">{% icon "x" 18 %}</button></div>
+  <div class="modal-body">
+    <p class="muted mt0" id="opt-desc"></p>
+    <div id="opt-groups"></div>
+    <div class="field"><label>{% t "Note for the bar / kitchen" %}</label><input class="inp" id="opt-note" maxlength="200" placeholder="{% t 'e.g. no onions, extra ice' %}"></div>
+    <div class="row between mt">
+      <div class="qty-ctl"><button type="button" data-opt-step="-1">−</button><b id="opt-qty">1</b><button type="button" data-opt-step="1">+</button></div>
+      <span class="muted small" id="opt-guest"></span>
+    </div>
+    <div class="err hide" id="opt-err" style="color:var(--err);margin-top:8px"></div>
+  </div>
+  <div class="form-actions"><button class="btn primary" id="opt-add" type="button">{% icon "plus" 16 %} {% t "Add" %}</button></div>
+</div></div>
+
+<div class="modal" id="move-modal"><div class="modal-box">
+  <form method="post" action="{% url 'pos:items_action' order.pk %}">{% csrf_token %}
+    <div class="modal-head"><h2>{% t "Move to another table" %}</h2><button class="modal-close" type="button">{% icon "x" 18 %}</button></div>
+    <div class="modal-body"><div class="field"><label>{% t "Free table" %}</label>
+      <select class="inp" name="table">{% for t in tables %}{% if t.pk != table.pk %}<option value="{{ t.pk }}">#{{ t.number }} · {{ t.seats }} {% t "seats" %}{% if t.section %} · {{ t.section }}{% endif %}</option>{% endif %}{% endfor %}</select></div>
+      <div class="field"><label>{% t "Number of guests" %}</label><input class="inp" type="number" min="1" max="99" name="guests" value="{{ order.guests }}" form="guests-form"></div>
+    </div>
+    <div class="form-actions"><button class="btn" form="guests-form" name="action" value="guests">{% t "Save guests" %}</button><button class="btn primary" name="action" value="move">{% icon "move" 16 %} {% t "Move" %}</button></div>
+  </form>
+  <form id="guests-form" method="post" action="{% url 'pos:items_action' order.pk %}">{% csrf_token %}</form>
+</div></div>
+
+{{ menu_json|json_script:"menu-data" }}
+{% endblock %}
+{% block scripts %}
+<script>
+window.ORDER = {
+  id: {{ order.pk }}, guests: {{ order.guests }}, submit: "{% url 'pos:order_submit' order.pk %}",
+  t: {
+    table: {% tjs "Table" %}, guest: {% tjs "Guest" %}, shared: {% tjs "Table (shared)" %}, all: {% tjs "Menu" %},
+    choose: {% tjs "Choose {0}" %}, soldOut: {% tjs "Sold out" %}, empty: {% tjs "Tap a product to add it for the selected guest." %},
+    sent: {% tjs "Sent: {0} items" %}, bar: {% tjs "Bar" %}, kitchen: {% tjs "Kitchen" %}, note: {% tjs "Note" %},
+    addGuest: {% tjs "Add guest" %}, forGuest: {% tjs "For" %}, remove: {% tjs "Remove" %}, error: {% tjs "Could not send. Try again." %}
+  }
+};
+</script>
+<script src="{% static 'odg/js/order.js' %}?v={{ odg_version }}"></script>
+{% endblock %}

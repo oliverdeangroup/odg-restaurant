@@ -1,0 +1,84 @@
+{% comment %}Shared building blocks. Included with part="..."{% endcomment %}
+{% if part == "logo" %}
+<a class="logo" href="/" aria-label="{{ brand.name }}">
+  {% if brand.logo_light and light %}<img src="{{ brand.logo_light.url }}" alt="{{ brand.name }}">{% elif brand.logo %}<img src="{{ brand.logo.url }}" alt="{{ brand.name }}">{% endif %}
+  {% if not brand.logo %}<span class="logo-text"><strong>{{ brand.short_name|default:brand.name }}</strong>{% if brand.motto and show_motto %}<small>{{ brand.motto }}</small>{% endif %}</span>{% endif %}
+</a>
+
+{% elif part == "menu_items" %}
+{% for it in items %}
+<li class="{% if it.subs %}has-sub{% endif %}{% if page and it.page_id == page.pk %} cur{% endif %}">
+  <a href="{{ it.href }}"{% if it.new_tab %} target="_blank" rel="noopener"{% endif %}>{{ it.label }}{% if it.subs %} {% icon "down" 13 %}{% endif %}</a>
+  {% if it.subs %}<ul class="dropdown">{% for s in it.subs %}<li><a href="{{ s.href }}"{% if s.new_tab %} target="_blank" rel="noopener"{% endif %}>{{ s.label }}</a></li>{% endfor %}</ul>{% endif %}
+</li>
+{% endfor %}
+
+{% elif part == "cta" %}
+{% if look.header_cta_text %}<a class="sbtn primary cta" href="{{ look.header_cta_link|default:'/reservations/' }}">{% icon "calendar" 15 %} {{ look.header_cta_text }}</a>{% endif %}
+
+{% elif part == "lang" %}
+<div class="site-lang">{% for code, name in languages %}<a href="?lang={{ code }}" class="{% if code == lang %}on{% endif %}" title="{{ name }}" rel="nofollow">{{ code|upper }}</a>{% endfor %}</div>
+
+{% elif part == "header" %}
+<header class="header">
+  <div class="wrap header-inner">
+    <button class="nav-toggle" type="button" data-nav-toggle aria-label="{% t 'Menu' %}" aria-expanded="false">{% icon "menu" 22 %}</button>
+    {% if look.header_layout == "split" %}
+      <nav class="nav nav-left" aria-label="{% t 'Main menu' %}"><ul>{% include "website/themes/_parts.html" with part="menu_items" items=header_left %}</ul></nav>
+      {% include "website/themes/_parts.html" with part="logo" light=over_hero %}
+      <nav class="nav nav-right" aria-label="{% t 'Main menu' %}"><ul>{% include "website/themes/_parts.html" with part="menu_items" items=header_right %}</ul></nav>
+      <div class="header-end">{% include "website/themes/_parts.html" with part="cta" %}</div>
+    {% else %}
+      {% include "website/themes/_parts.html" with part="logo" light=over_hero show_motto=True %}
+      <nav class="nav" aria-label="{% t 'Main menu' %}"><ul>{% include "website/themes/_parts.html" with part="menu_items" items=header_menu %}</ul></nav>
+      <div class="header-end">{% include "website/themes/_parts.html" with part="cta" %}</div>
+    {% endif %}
+  </div>
+  <div class="mobile-nav" id="mobile-nav">
+    <ul>{% include "website/themes/_parts.html" with part="menu_items" items=header_menu %}</ul>
+    {% include "website/themes/_parts.html" with part="cta" %}
+    {% include "website/themes/_parts.html" with part="lang" %}
+  </div>
+</header>
+
+{% elif part == "topbar" %}
+<div class="topbar"><div class="wrap">
+  <div class="tb-items">
+    {% if brand.phone %}<a href="tel:{{ brand.phone|cut:' ' }}">{% icon "phone" 14 %} {{ brand.phone }}</a>{% endif %}
+    {% if brand.email %}<a href="mailto:{{ brand.email }}">{% icon "mail" 14 %} {{ brand.email }}</a>{% endif %}
+    {% if brand.address %}<span class="hide-sm">{% icon "pin" 14 %} {{ brand.address }}{% if brand.city %}, {{ brand.city }}{% endif %}</span>{% endif %}
+    {% if brand.opening_hours %}<span class="hide-sm">{% icon "clock" 14 %} {{ brand.opening_hours|truncatechars:40 }}</span>{% endif %}
+  </div>
+  <div class="tb-items">{% include "website/themes/_parts.html" with part="social" %}{% include "website/themes/_parts.html" with part="lang" %}</div>
+</div></div>
+
+{% elif part == "social" %}
+{% for name, url in brand.socials %}<a href="{{ url }}" target="_blank" rel="noopener" aria-label="{{ name }}">{% icon name 16 %}</a>{% endfor %}
+{% if brand.whatsapp %}<a href="https://wa.me/{{ brand.whatsapp|cut:' '|cut:'+'|cut:'-' }}" target="_blank" rel="noopener" aria-label="WhatsApp">{% icon "whatsapp" 16 %}</a>{% endif %}
+
+{% elif part == "hero" %}
+<section class="hero{% if look.hero_image %} has-img{% endif %}" {% if look.hero_image %}style="--img:url('{{ look.hero_image.url }}')"{% endif %}>
+  <div class="wrap hero-inner"><div class="hero-text">
+    {% if look.hero_title %}<h1>{{ look.hero_title }}</h1>{% endif %}
+    {% if look.hero_subtitle %}<p>{{ look.hero_subtitle }}</p>{% endif %}
+    {% if look.hero_button_text %}<div class="hero-btns"><a class="sbtn primary" href="{{ look.hero_button_link|default:'#' }}">{{ look.hero_button_text }}</a></div>{% endif %}
+  </div></div>
+</section>
+
+{% elif part == "footer" %}
+<footer class="footer">
+  {% if footer_html %}{{ footer_html|safe }}{% else %}
+  <div class="wrap footer-grid">
+    <div><h3>{{ brand.name }}</h3>{% if brand.motto %}<p>{{ brand.motto }}</p>{% endif %}</div>
+    <div><ul class="contact-list">{% if brand.address %}<li>{% icon "pin" 16 %}<span>{{ brand.address }}, {{ brand.city }}</span></li>{% endif %}{% if brand.phone %}<li>{% icon "phone" 16 %}<a href="tel:{{ brand.phone|cut:' ' }}">{{ brand.phone }}</a></li>{% endif %}{% if brand.email %}<li>{% icon "mail" 16 %}<a href="mailto:{{ brand.email }}">{{ brand.email }}</a></li>{% endif %}</ul></div>
+    <div>{% if brand.opening_hours %}<p>{{ brand.opening_hours|linebreaksbr }}</p>{% endif %}</div>
+  </div>
+  {% endif %}
+  <div class="footer-bottom"><div class="wrap">
+    <div>© {% now "Y" %} {{ brand.name }}{% if look.footer_text %} · {{ look.footer_text }}{% endif %}</div>
+    {% if footer_menu %}<nav class="footer-nav">{% for it in footer_menu %}<a href="{{ it.href }}">{{ it.label }}</a>{% endfor %}</nav>{% endif %}
+    {% if look.footer_show_social %}<div class="social">{% include "website/themes/_parts.html" with part="social" %}</div>{% endif %}
+    {% if look.footer_show_powered %}<div class="powered">Powered by <strong>ODG-RESTAURANT</strong></div>{% endif %}
+  </div></div>
+</footer>
+{% endif %}

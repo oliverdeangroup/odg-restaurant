@@ -1,0 +1,18 @@
+<div class="mn mn-d{{ node.depth }}">
+  {% if node.depth == 0 %}<h2 class="mn-title">{{ node.c.name }}</h2>{% elif node.depth == 1 %}<h3 class="mn-title">{{ node.c.name }}</h3>{% else %}<h4 class="mn-title">{{ node.c.name }}</h4>{% endif %}
+  {% if node.products %}
+  <ul class="mn-list cols-{{ d.columns }}">
+    {% for p in node.products %}
+    <li class="mn-item{% if not p.available %} sold{% endif %}">
+      {% if d.show_images and p.image %}<img src="{{ p.image.url }}" alt="{{ p.name }}" loading="lazy">{% endif %}
+      <div class="mn-body">
+        <div class="mn-row"><strong>{{ p.name }}</strong>{% if d.show_prices %}<span class="mn-dots"></span><span class="mn-price">{{ p.price|money }}</span>{% endif %}</div>
+        {% if d.show_descriptions and p.description %}<p>{{ p.description }}</p>{% endif %}
+        {% if not p.available %}<small class="mn-sold">{% t "Sold out today" %}</small>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% for child in node.children %}{% with node=child %}{% include "website/widgets/_menu_node.html" %}{% endwith %}{% endfor %}
+</div>

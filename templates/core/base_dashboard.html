@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0d1530">
 <title>{% block title %}{% t "Dashboard" %}{% endblock %} · {{ sys.system_name }}</title>
 <link rel="icon" href="{% static 'odg/img/odg-restaurant.svg' %}">
+{% include "core/_app_head.html" %}
 <link rel="stylesheet" href="{% static 'odg/css/dashboard.css' %}?v={{ odg_version }}">
 <link rel="stylesheet" href="{% static 'odg/css/pos.css' %}?v={{ odg_version }}">
 <link rel="stylesheet" href="{% static 'odg/css/cms.css' %}?v={{ odg_version }}">
 {% block head %}{% endblock %}
+<link rel="stylesheet" href="{% static 'odg/css/responsive.css' %}?v={{ odg_version }}">
 </head>
 <body class="dash {% if request.demo %}is-demo{% endif %} {% block body_class %}{% endblock %}">
 {% include "core/_icons.html" %}
@@ -45,6 +46,7 @@
       <div class="dd-menu">
         <div class="dd-head"><strong>{{ user }}</strong><small>{{ user.get_role_display|tr }}</small></div>
         <a href="{% url 'core:profile' %}">{% icon "user" 16 %} {% t "My profile" %}</a>
+        <a href="#" data-install hidden>{% icon "download" 16 %} {% t "Install app" %}</a>
         <a href="#" data-sound-toggle>{% icon "bell" 16 %} <span data-sound-label>{% t "Sound alerts" %}</span></a>
         <a href="{% url 'core:logout' %}">{% icon "logout" 16 %} {% t "Log out" %}</a>
       </div>
@@ -55,14 +57,14 @@
 {% if request.demo %}
 <div class="demo-bar">
   <span class="demo-tag">DEMO</span>
-  <span class="demo-roles">{% t "View as" %}:
+  <span class="demo-roles"><span class="lbl">{% t "View as" %}:</span>
     {% for r, label in demo_roles %}<a href="/dashboard/demo/enter/?as={{ r }}" class="{% if user.role == r %}on{% endif %}">{{ label|tr }}</a>{% endfor %}
-    <a href="/demo/site/" target="_blank" rel="noopener" class="dr-site">{% icon "globe" 13 %} {% t "Restaurant website" %}</a>
+    <a href="/demo/site/" target="_blank" rel="noopener" class="dr-site" title="{% t 'Restaurant website' %}">{% icon "globe" 13 %} <span class="lbl">{% t "Restaurant website" %}</span></a>
   </span>
   <span class="demo-hint">{% t "Code" %} <strong>{{ request.demo.code }}</strong> · {% t "Only you see your changes." %}</span>
   <span class="demo-actions">
-    <form method="post" action="/demo/reset/" class="inline" data-confirm="{% t 'Start again with a fresh demo restaurant? Your changes are removed.' %}">{% csrf_token %}<button class="demo-btn">{% icon "refresh" 14 %} {% t "Reset" %}</button></form>
-    <a class="demo-btn" href="/demo/exit/">{% icon "logout" 14 %} {% t "Exit demo" %}</a>
+    <form method="post" action="/demo/reset/" class="inline" data-confirm="{% t 'Start again with a fresh demo restaurant? Your changes are removed.' %}">{% csrf_token %}<button class="demo-btn" title="{% t 'Reset' %}">{% icon "refresh" 14 %} <span class="lbl">{% t "Reset" %}</span></button></form>
+    <a class="demo-btn" href="/demo/exit/" title="{% t 'Exit demo' %}">{% icon "logout" 14 %} <span class="lbl">{% t "Exit demo" %}</span></a>
   </span>
 </div>
 {% endif %}
@@ -112,6 +114,7 @@ window.ODG = {
 </script>
 <script src="{% static 'odg/js/dashboard.js' %}?v={{ odg_version }}"></script>
 <script src="{% static 'odg/js/live.js' %}?v={{ odg_version }}"></script>
+<script src="{% static 'odg/js/app.js' %}?v={{ odg_version }}"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

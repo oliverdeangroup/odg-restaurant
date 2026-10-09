@@ -123,3 +123,13 @@ class DemoTests(TestCase):
         # The same visitor sees it in the demo dashboard
         self.client.get("/dashboard/demo/enter/?as=manager")
         self.assertContains(self.client.get(f"/dashboard/pos/reservations/?date={day}"), "Visitor")
+
+    def test_demo_login_survives_other_pages(self):
+        """Regression: /sw.js and the public website must not log the demo visitor out."""
+        self._start(self.client, "chef", "203.0.113.30")
+        self.assertEqual(self.client.get("/dashboard/pos/live/").status_code, 200)
+        for url in ("/sw.js", "/manifest.webmanifest", "/", "/demo/", "/app/"):
+            self.client.get(url)
+        r = self.client.get("/dashboard/pos/live/")
+        self.assertEqual(r.status_code, 200, "the demo session was lost")
+        self.assertIn("v", r.json())

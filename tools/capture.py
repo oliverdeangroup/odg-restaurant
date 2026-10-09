@@ -47,8 +47,9 @@ def reset(page):
     """Start from a fresh demo copy, so the pictures always look the same."""
     page.goto(f"{BASE}/demo/site/?lang=en")
     as_role(page, "waiter", "/dashboard/pos/")
-    page.evaluate("document.querySelector('form[action=\"/demo/reset/\"]').submit()")
-    page.wait_for_load_state("networkidle")
+    with page.expect_navigation(timeout=120000):
+        page.evaluate("document.querySelector('form[action=\"/demo/reset/\"]').submit()")
+    page.wait_for_load_state("load")
 
 
 def as_role(page, role, path):
@@ -102,6 +103,8 @@ def screenshots(browser):
     shot(page, "performance")
     as_role(page, "owner", "/dashboard/finance/?period=month")
     shot(page, "finance")
+    page.goto(f"{BASE}/app/?source=switch&lang=en")
+    shot(page, "app-start")
     page.goto(f"{BASE}/dashboard/home/")
     shot(page, "owner-home")
     ctx.close()

@@ -78,6 +78,7 @@ def logout_view(request):
         logout(request)
         resp = redirect("/demo/")
         resp.delete_cookie("odg_demo")
+        resp.delete_cookie("odg_demo_sid")
         return resp
     lang = request.session.get("lang")
     logout(request)

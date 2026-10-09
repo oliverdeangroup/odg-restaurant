@@ -312,3 +312,18 @@ class V11Tests(Base):
         self.assertContains(r, '"@type": "Organization"')
         self.assertContains(self.client.get("/features/"), "Chef &amp; bartender")
         self.assertContains(self.client.get("/demo/"), "Visit Dinosaur BBQ")
+
+
+class AppTests(Base):
+    def test_installable_app(self):
+        m = self.client.get("/manifest.webmanifest").json()
+        self.assertEqual(m["display"], "standalone")
+        self.assertTrue(any(i["purpose"] == "maskable" for i in m["icons"]))
+        sw = self.client.get("/sw.js")
+        self.assertEqual(sw["Service-Worker-Allowed"], "/")
+        self.assertIn("odg-static-", sw.content.decode())
+        self.assertContains(self.client.get("/app/"), "Try the demo")
+        self.assertContains(self.client.get("/app/offline/"), "No connection")
+        self.login(Role.CHEF)
+        self.assertRedirects(self.client.get("/app/"), "/dashboard/", target_status_code=302)
+        self.assertContains(self.client.get(reverse("pos:kitchen")), 'rel="manifest"')

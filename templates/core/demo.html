@@ -63,6 +63,7 @@
             <li>{% t "Everything you do is only visible to you. Other visitors have their own copy, and the real restaurant is never touched." %}</li>
             <li>{% t "Your demo is removed automatically {0} hours after your last visit." hours %}</li>
           </ol>
+          <p class="small">{% icon "pos" 14 %} {% t "On a tablet? Open" %} <a href="/app/">/app/</a> {% t "and tap Install app: the demo and the real system then open full screen from their own icon." %}</p>
           {% if current %}<p class="muted small">{% t "Your demo code" %}: <strong>{{ current.code }}</strong></p>{% endif %}
         </div>
         <div class="demo-box">

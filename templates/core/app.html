@@ -1,0 +1,57 @@
+{% load static %}<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>{{ sys.system_name }}</title>
+{% include "core/_app_head.html" %}
+<link rel="stylesheet" href="{% static 'odg/css/dashboard.css' %}?v={{ odg_version }}">
+<link rel="stylesheet" href="{% static 'odg/css/app.css' %}?v={{ odg_version }}">
+</head>
+<body class="app-start">
+{% include "core/_icons.html" %}
+<header class="as-top">
+  <span class="as-brand"><img src="{% static 'odg/img/odg-restaurant.svg' %}" alt="">{{ sys.system_name }}</span>
+  <span class="as-lang">{% for code, name in languages %}<a href="?lang={{ code }}&source=switch" class="{% if code == lang %}on{% endif %}">{{ code|upper }}</a>{% endfor %}</span>
+</header>
+<main class="as-main">
+  <h1>{% t "Welcome" %}</h1>
+  <p class="as-sub">{% t "Choose how you want to start. Everything is synchronised with the restaurant in real time." %}</p>
+  <div class="as-grid">
+    <section class="as-panel">
+      <div class="as-panel-head"><span class="as-ico">{% icon "lock" 26 %}</span><div><h2>{% t "My restaurant" %}</h2><p>{% t "Log in with your own account: waiter, bartender, chef, manager, owner or administrator." %}</p></div></div>
+      {% if user.is_authenticated %}
+      <a class="as-btn primary" href="{% url 'core:dashboard' %}">{% icon "right" 18 %} {% t "Open my dashboard" %}</a>
+      {% else %}
+      <a class="as-btn primary" href="{% url 'core:login' %}?next=/dashboard/">{% icon "right" 18 %} {% t "Log in" %}</a>
+      {% endif %}
+      <ul class="as-tips">
+        <li>{% icon "check" 15 %} {% t "Tip: one tablet per station — the kitchen tablet logs in as chef, the bar tablet as bartender." %}</li>
+        <li>{% icon "check" 15 %} {% t "The screen stays on while the live queue is open." %}</li>
+      </ul>
+    </section>
+    {% if demo_on %}
+    <section class="as-panel">
+      <div class="as-panel-head"><span class="as-ico gold">{% icon "pos" 26 %}</span><div><h2>{% t "Try the demo" %}</h2><p>{% t "A private demo restaurant (Dinosaur BBQ) on this device. No login needed." %}</p></div></div>
+      <div class="as-roles">
+        {% for r in roles %}
+        <form method="post" action="{% url 'core:demo_start' r %}">{% csrf_token %}
+          <button class="as-role r-{{ r }}">{% if r == "waiter" %}{% icon "pos" 22 %}{% elif r == "bartender" %}{% icon "glass" 22 %}{% elif r == "chef" %}{% icon "chef" 22 %}{% elif r == "manager" %}{% icon "eye" 22 %}{% else %}{% icon "chart" 22 %}{% endif %}
+            <span>{% if r == "waiter" %}{% t "Waiter" %}{% elif r == "bartender" %}{% t "Bartender" %}{% elif r == "chef" %}{% t "Chef" %}{% elif r == "manager" %}{% t "Manager" %}{% else %}{% t "Owner" %}{% endif %}</span></button>
+        </form>
+        {% endfor %}
+        <a class="as-role r-site" href="/demo/site/">{% icon "globe" 22 %}<span>{% t "Website" %}</span></a>
+      </div>
+      {% if current %}<p class="as-code">{% t "Your demo code" %}: <strong>{{ current.code }}</strong></p>{% endif %}
+    </section>
+    {% endif %}
+  </div>
+  <div class="as-install" id="install-box" hidden>
+    <span>{% icon "download" 18 %} {% t "Install ODG-RESTAURANT on this tablet: it opens full screen from its own icon." %}</span>
+    <button class="as-btn" type="button" data-install>{% t "Install app" %}</button>
+  </div>
+</main>
+<script src="{% static 'odg/js/app.js' %}?v={{ odg_version }}"></script>
+</body>
+</html>

@@ -36,6 +36,10 @@ from django.utils import timezone
 
 COOKIE = "odg_demo"
 COOKIE_SALT = "odg-demo"
+# The demo login has its own session cookie. With one shared cookie, any request
+# outside the demo (the website, /sw.js …) would find no such session in the
+# real database and delete the cookie, logging the demo visitor out.
+SESSION_COOKIE = "odg_demo_sid"
 DEMO_PATHS = ("/dashboard", "/logout/", "/demo/site/")
 ROLES = ("waiter", "bartender", "chef", "manager", "owner")
 DEMO_USERNAMES = {r: f"demo.{r}" for r in ROLES}
@@ -355,6 +359,19 @@ def set_cookie(response, code):
 
 # ------------------------------------------------------------------ middleware
 
+def _rename_session_cookie(response):
+    """Moves a session cookie set inside the demo to the demo's own cookie name."""
+    name = settings.SESSION_COOKIE_NAME
+    if name not in response.cookies:
+        return
+    m = response.cookies.pop(name)
+    if m.value == "" or str(m["max-age"]) == "0":
+        response.delete_cookie(SESSION_COOKIE)
+        return
+    response.set_cookie(SESSION_COOKIE, m.value, max_age=settings.SESSION_COOKIE_AGE, path="/", httponly=True,
+                        secure=settings.SESSION_COOKIE_SECURE, samesite=settings.SESSION_COOKIE_SAMESITE)
+
+
 class DemoMiddleware:
     """Runs the dashboard inside the visitor's demo copy when the demo cookie is set."""
 
@@ -373,14 +390,22 @@ class DemoMiddleware:
             # On the demo website a fresh copy is made right away; the dashboards go back to /demo/.
             resp = redirect(request.path if request.path.startswith("/demo/site/") else "/demo/?expired=1")
             resp.delete_cookie(COOKIE)
-            resp.delete_cookie(settings.SESSION_COOKIE_NAME)
+            resp.delete_cookie(SESSION_COOKIE)
             return resp
         if sb.stamp != schema_stamp():
             reset_sandbox(sb)
             return redirect(request.path if request.path.startswith("/demo/site/") else "/dashboard/demo/enter/")
         request.demo = sb
+        cookies = dict(request.COOKIES)
+        demo_sid = cookies.pop(SESSION_COOKIE, None)
+        if demo_sid:
+            cookies[settings.SESSION_COOKIE_NAME] = demo_sid
+        else:
+            cookies.pop(settings.SESSION_COOKIE_NAME, None)
+        request.COOKIES = cookies
         with use(sandbox_dir(sb.code), {"code": sb.code}):
             response = self.get_response(request)
+        _rename_session_cookie(response)
         if (timezone.now() - sb.last_seen).total_seconds() > 60:
             DemoSandbox.objects.filter(pk=sb.pk).update(last_seen=timezone.now())
         if response.status_code in (301, 302) and response.get("Location", "").startswith("/login"):

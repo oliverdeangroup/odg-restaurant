@@ -7,7 +7,7 @@
 <a class="btn primary" href="{% url 'pos:product_new' %}{% if cat %}?cat={{ cat }}{% endif %}">{% icon "plus" 16 %} {% t "Add product" %}</a>
 {% endblock %}
 {% block content %}
-<div class="grid" style="grid-template-columns:280px minmax(0,1fr)">
+<div class="grid prod-layout">
   <div class="card">
     <div class="card-head"><h3>{% t "Categories" %}</h3></div>
     <div class="cat-tree">

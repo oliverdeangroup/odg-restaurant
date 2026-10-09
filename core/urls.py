@@ -1,10 +1,14 @@
 from django.urls import path
 
-from . import views, views_demo
+from . import views, views_app, views_demo
 
 app_name = "core"
 
 urlpatterns = [
+    path("manifest.webmanifest", views_app.manifest, name="manifest"),
+    path("sw.js", views_app.service_worker, name="service_worker"),
+    path("app/", views_app.app_home, name="app"),
+    path("app/offline/", views_app.offline, name="offline"),
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("media/public/<path:path>", views.public_media, name="public_media"),

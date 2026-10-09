@@ -319,3 +319,44 @@ body.over-hero .header .nav a, body.over-hero .logo, body.over-hero .nav-toggle 
 .demo-err { color: #b4122b; font-weight: 600; }
 @media (max-width: 1060px) { .demo-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 700px) { .demo-cards, .demo-info { grid-template-columns: 1fr; } .demo-cards { margin-top: -60px; } .demo-code { flex-direction: column; } }
+
+/* phones: calmer buttons and headings */
+@media (max-width: 699px) {
+  body.site { font-size: calc(var(--fs) - 1px); }
+  h1 { font-size: clamp(28px, 8vw, 36px); }
+  h2 { font-size: clamp(22px, 6.4vw, 28px); }
+  h3 { font-size: 18px; }
+  .sbtn { padding: 10px 18px; font-size: 14.5px; gap: 6px; }
+  .theme-lounge .sbtn { letter-spacing: 1px; font-size: 12.5px; padding: 10px 16px; }
+  .hero-btns { gap: 8px; }
+  .hero-btns .sbtn { flex: 1 1 140px; justify-content: center; }
+  .hero, .wg-hero { min-height: 0; }
+  .wg-hero { padding: 48px 18px; }
+  .wg-hero.h-lg, .wg-hero.h-full { min-height: 70vh; }
+  .wg-hero.h-md { min-height: 300px; }
+  .hero p, .wg-hero p { font-size: 16px; }
+  .bs.pad-lg { padding: 44px 0; } .bs.pad-xl { padding: 60px 0; } .bs.pad-md { padding: 32px 0; }
+  .bs-in, .wrap { width: calc(100% - 32px); }
+  .bs.w-full .bs-in { width: 100%; }
+  .bs-grid { gap: 20px; }
+  .wg-iconbox .ib-icon { width: 54px; height: 54px; }
+  .rv { padding: 20px; }
+  .header-inner { gap: 10px; min-height: 58px; }
+  .logo img { height: 38px; }
+  .logo-text strong { font-size: 18px; }
+  .logo-text small { display: none; }
+  .topbar { font-size: 12.5px; }
+  .topbar .wrap { padding: 5px 0; }
+  .tb-items { gap: 10px; }
+  .page-band { padding: 46px 0 34px; }
+  .demo-ribbon { font-size: 12.5px; padding: 8px 12px; }
+  .demo-ribbon .dr-text { min-width: 100%; }
+  .demo-ribbon a { padding: 3px 8px; }
+  .demo-fab { font-size: 13px; }
+  .mn-list { gap: 14px; }
+  .wg-booking { padding: 18px; }
+  .bk-slots button { padding: 7px 12px; font-size: 14px; }
+  .footer-bottom .wrap { justify-content: center; text-align: center; }
+  .demo-card { padding: 22px; }
+  .demo-card h2 { font-size: 20px; }
+}

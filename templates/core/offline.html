@@ -1,0 +1,26 @@
+{% load static %}<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% t "No connection" %}</title>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { display: grid; place-items: center; background: radial-gradient(circle at 20% 0, #1d47b8 0, #0a2a7f 45%, #061647 100%); color: #fff; font: 16px/1.6 "Segoe UI", system-ui, sans-serif; text-align: center; padding: 24px; box-sizing: border-box; }
+  .box { max-width: 420px; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: #ffc800; display: inline-block; animation: p 1.2s infinite alternate; }
+  @keyframes p { from { opacity: .3; } to { opacity: 1; } }
+  h1 { font-size: 26px; margin: 16px 0 8px; }
+  p { color: #cfd8f6; margin: 0 0 20px; }
+  button { font: inherit; font-weight: 700; padding: 12px 24px; border-radius: 12px; border: 0; background: #ffc800; color: #1b1b1b; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="box">
+  <span class="dot"></span>
+  <h1>{% t "No connection" %}</h1>
+  <p>{% t "The tablet has no internet right now. The screen reconnects by itself as soon as the connection is back." %}</p>
+  <button type="button" onclick="location.reload()">{% t "Try again" %}</button>
+</div>
+<script>setInterval(function () { fetch("/manifest.webmanifest", {cache: "no-store"}).then(function (r) { if (r.ok) location.reload(); }).catch(function () {}); }, 5000);</script>
+</body>
+</html>

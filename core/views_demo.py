@@ -107,7 +107,7 @@ def reset(request):
 def exit_demo(request):
     resp = redirect("/demo/")
     resp.delete_cookie(demo.COOKIE)
-    resp.delete_cookie(settings.SESSION_COOKIE_NAME)
+    resp.delete_cookie(demo.SESSION_COOKIE)
     return resp
 
 

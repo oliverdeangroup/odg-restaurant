@@ -1,0 +1,38 @@
+/* App start screen (/app/): same colours and buttons as the dashboard and the demo page. */
+body.app-start { margin: 0; min-height: 100vh; font: 15px/1.55 var(--font); color: #fff;
+  background: radial-gradient(circle at 15% 0, #1d47b8 0, var(--navy) 45%, #061647 100%) fixed; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+.as-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 22px; max-width: 1180px; margin: 0 auto; }
+.as-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .4px; font-size: 17px; }
+.as-brand img { width: 40px; height: 40px; border-radius: 10px; }
+.as-lang a { color: #c9d3f1; font-weight: 700; font-size: 13px; padding: 5px 9px; border-radius: 7px; text-decoration: none; }
+.as-lang a.on { background: var(--gold); color: #1b1b1b; }
+.as-main { max-width: 1180px; margin: 0 auto; padding: 18px 22px 40px; }
+.as-main h1 { font-size: clamp(28px, 4.5vw, 44px); margin: 10px 0 6px; color: #fff; }
+.as-sub { color: #cfd8f6; margin: 0 0 26px; font-size: 1.05em; }
+.as-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.as-panel { background: #fff; color: var(--text); border-radius: 20px; padding: 26px; box-shadow: 0 20px 50px rgba(0, 0, 0, .25); display: flex; flex-direction: column; gap: 18px; }
+.as-panel-head { display: flex; gap: 14px; align-items: flex-start; }
+.as-panel h2 { margin: 2px 0 4px; font-size: 22px; }
+.as-panel-head p { margin: 0; color: var(--muted); }
+.as-ico { width: 54px; height: 54px; flex: none; border-radius: 14px; display: grid; place-items: center; background: var(--info-bg); color: var(--navy); }
+.as-ico.gold { background: #fff6d1; color: #8a6a00; }
+.as-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 15px 22px; border-radius: 14px; font: inherit; font-weight: 700; font-size: 16px; border: 2px solid var(--navy); background: #fff; color: var(--navy); text-decoration: none; cursor: pointer; }
+.as-btn.primary { background: var(--navy); color: #fff; }
+.as-btn:hover { text-decoration: none; filter: brightness(1.08); }
+.as-tips { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; color: #4b5470; font-size: 14px; }
+.as-tips li { display: flex; gap: 8px; align-items: flex-start; }
+.as-tips .ic { color: var(--ok); margin-top: 3px; }
+.as-roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.as-roles form { margin: 0; }
+.as-role { width: 100%; min-height: 96px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 12px 6px; border-radius: 14px;
+  border: 2px solid var(--line); background: #fafbfd; color: var(--text); font: inherit; font-weight: 700; font-size: 14.5px; cursor: pointer; text-decoration: none; text-align: center; }
+.as-role:hover { text-decoration: none; border-color: currentColor; }
+.as-role.r-waiter { color: #0a2a7f; } .as-role.r-bartender { color: #0e7c86; } .as-role.r-chef { color: #b4122b; }
+.as-role.r-manager { color: #6a33ad; } .as-role.r-owner { color: #a87400; } .as-role.r-site { color: #e8622c; }
+.as-role span { color: var(--text); }
+.as-code { margin: 0; color: var(--muted); font-size: 13.5px; }
+.as-install { margin-top: 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding: 16px 20px; border-radius: 16px; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .2); }
+.as-install span { display: flex; gap: 8px; align-items: center; }
+.as-install .as-btn { padding: 11px 18px; font-size: 15px; background: var(--gold); border-color: var(--gold); color: #1b1b1b; }
+@media (max-width: 800px) { .as-grid { grid-template-columns: 1fr; } }
+@media (max-width: 420px) { .as-roles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .as-panel { padding: 20px; } }

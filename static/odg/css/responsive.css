@@ -1,0 +1,128 @@
+/* ODG-RESTAURANT — phone and tablet layout of the dashboard.
+   Loaded last, so it can fine-tune the rules in dashboard.css and pos.css.
+   Sizes: phone < 700 px · tablet portrait 700–1023 px · tablet landscape / desktop ≥ 1024 px. */
+
+/* ---------- floor plan: section names always readable ---------- */
+.zone > span { z-index: 3; top: 6px; left: 8px; padding: 2px 8px; border-radius: 6px; background: rgba(255, 255, 255, .88);
+  color: #3b4258; font-size: 11px; line-height: 1.4; pointer-events: none; box-shadow: 0 1px 2px rgba(16, 24, 48, .08); }
+.ftable { z-index: 2; }
+.ftable:hover { z-index: 4; }
+
+/* ---------- charts never push the page wider than the screen ---------- */
+.bars .b { min-width: 0; }
+.bars .b small { overflow: hidden; text-overflow: clip; white-space: nowrap; max-width: 100%; }
+.main, .card { min-width: 0; }
+
+/* ---------- tablet portrait: keep the work screens side by side ---------- */
+@media (min-width: 700px) and (max-width: 1023px) {
+  .order-grid { grid-template-columns: minmax(0, 1fr) 320px; }
+  .menu-panel { position: sticky; top: calc(var(--top-h) + 12px); }
+  body.is-demo .menu-panel { top: calc(var(--top-h) + 50px); }
+  .cassa-grid { grid-template-columns: 250px minmax(0, 1fr); }
+  .cat-tiles, .prod-tiles { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .tickets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .queue-head .stat { min-width: 160px; }
+}
+
+/* ---------- touch: bigger tap targets ---------- */
+@media (pointer: coarse) {
+  .done-btn { width: 48px; height: 48px; }
+  .btn.sm { padding: 8px 12px; }
+  .cart-line .q button { width: 34px; height: 34px; }
+  .guest-tabs button { padding: 9px 14px; }
+  .start-btn { padding: 4px 0; }
+}
+
+/* ---------- phones ---------- */
+@media (max-width: 699px) {
+  :root { --top-h: 50px; }
+  body.dash { font-size: 14px; }
+  .main { padding: calc(var(--top-h) + 12px) 12px 28px; }
+  body.is-demo .main { padding-top: calc(var(--top-h) + 38px + 12px); }
+
+  /* top bar */
+  .topbar { gap: 6px; padding: 0 8px; }
+  .tb-name { display: none; }
+  .tb-right { gap: 4px; min-width: 0; }
+  .tb-site { display: none; }
+  .live-dot { margin-right: 0; }
+  .tb-lang a { padding: 3px 5px; font-size: 11px; }
+
+  /* demo bar: roles scroll sideways, actions become icons */
+  .demo-bar { gap: 8px; padding: 0 8px; }
+  .demo-bar .lbl, .demo-hint { display: none; }
+  .demo-tag { padding: 2px 6px; }
+  .demo-roles { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; gap: 4px; }
+  .demo-roles::-webkit-scrollbar { display: none; }
+  .demo-roles a { padding: 4px 9px; font-size: 12.5px; }
+  .demo-roles a.dr-site { margin-left: 2px; }
+  .demo-actions { gap: 4px; margin-left: 0; }
+  .demo-btn { padding: 6px 8px; }
+
+  /* page head: title on top, action buttons as icons in one row */
+  .page-head { flex-direction: column; align-items: stretch; gap: 8px; margin-bottom: 12px; }
+  .page-head h1 { font-size: 19px; margin: 0; }
+  .page-actions { display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .page-actions::-webkit-scrollbar { display: none; }
+  .page-actions .btn:has(> svg.ic) { font-size: 0; gap: 0; padding: 9px 11px; }
+  .page-actions .btn.primary:has(> svg.ic) { font-size: 13px; gap: 6px; padding: 9px 12px; }
+  .page-actions form.inline .btn { font-size: 0; gap: 0; padding: 9px 11px; }
+
+  /* stat cards: two per row, numbers never cut off */
+  .grid.g4, .grid.g3, .queue-head { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .queue-head .stat { min-width: 0; }
+  .stat { padding: 12px; gap: 10px; align-items: flex-start; }
+  .stat .ico { width: 34px; height: 34px; border-radius: 10px; }
+  .stat .ico .ic { width: 18px; height: 18px; }
+  .stat .num { font-size: 17px; white-space: normal; overflow-wrap: anywhere; }
+  .stat .lbl { font-size: 12px; line-height: 1.3; }
+  .grid { gap: 12px; }
+  .card + .card { margin-top: 12px; }
+
+  /* lists and tables: swipe sideways instead of squeezing the columns */
+  .table-wrap, .card-body.tight { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-wrap > .tbl { min-width: 700px; }
+  .tbl th, .tbl td { padding: 9px 10px; }
+  .filters { width: 100%; }
+  .filters .inp, .filters .search { flex: 1 1 140px; min-width: 0; width: auto; }
+  .filters select.inp { flex: 0 1 auto; max-width: 100%; }
+  .card-head { padding: 12px 14px; }
+  .period-nav { width: 100%; justify-content: space-between; }
+  .period-nav .label { order: -1; flex: 1 1 100%; min-width: 0; text-align: left; font-size: 15px; }
+
+  /* floor plan: keep tables readable, swipe sideways */
+  .floor-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .floor { min-width: 640px; }
+  .ftable small { display: block; font-size: 9.5px; }
+  .legend { gap: 8px 12px; font-size: 12px; }
+  .timeline { min-width: 560px; }
+  .card-body:has(> .timeline) { overflow-x: auto; }
+
+  /* work screens */
+  .order-grid, .waiter-grid, .cassa-grid, .designer { grid-template-columns: 1fr; gap: 12px; }
+  .cat-tiles, .prod-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .cat-tile { min-height: 54px; padding: 12px; }
+  .prod-tile { min-height: 78px; padding: 10px; }
+  .submit-bar { position: sticky; bottom: 0; z-index: 5; box-shadow: 0 -6px 16px rgba(16, 24, 48, .08); }
+  .tickets { grid-template-columns: 1fr; }
+  .ticket-head .tno { font-size: 22px; }
+  .pay-methods span { padding: 12px; }
+  .qa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .qa { padding: 12px; font-size: 13px; }
+  .modal { padding: 0; align-items: flex-end; }
+  .modal-box { border-radius: 16px 16px 0 0; max-height: 92vh; overflow-y: auto; }
+  .toasts { left: 12px; right: 12px; bottom: 12px; max-width: none; }
+  .role-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .role-chips .chip { flex: none; }
+  .hours-grid { grid-template-columns: 1fr 50px; }
+  .hours-grid input { grid-column: span 1; }
+  .builder { grid-template-columns: 1fr; }
+  .bars { gap: 2px; }
+  .bars .b small { font-size: 8.5px; }
+  .bars .b:nth-child(even) small { visibility: hidden; }
+  body.dash { overflow-x: hidden; }
+}
+
+.prod-layout { grid-template-columns: 260px minmax(0, 1fr); }
+@media (max-width: 899px) { .prod-layout { grid-template-columns: 1fr; } .cat-tree { max-height: 240px; overflow-y: auto; } }
+@media (max-width: 699px) { .search { min-width: 0; max-width: 100%; } .search .inp { width: 100%; min-width: 0; } }

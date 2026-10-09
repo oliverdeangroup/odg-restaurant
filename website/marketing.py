@@ -74,6 +74,13 @@ def home():
                 "opening hours and online booking. Three themes, SEO tools like Rank Math, and everything in three languages.</p>"
                 "<p>Bookings from the website appear in the dashboard at once — see it on our demo restaurant, Dinosaur BBQ.</p>",
                 "site-home", "Example restaurant website made with ODG-RESTAURANT"),
+        feature("An app for every tablet", "Android tablets & phones",
+                "<p>Install ODG-RESTAURANT on the tablets in your restaurant: it opens full screen from its own icon, like a normal app. "
+                "Give every station its own tablet — the kitchen logs in as chef, the bar as bartender, the waiters take orders at the table.</p>"
+                "<ul><li>Always in sync: it is the same live system, no separate copy</li><li>The screen stays on while the queue is open</li>"
+                "<li>Works on phones too, and the demo is inside the app</li></ul>"
+                "<p><a href=\"/app/\">Open the app start screen</a> on your tablet and tap <strong>Install app</strong>.</p>",
+                "app-start", "The ODG-RESTAURANT app start screen on a tablet", image_left=True, bg="#f3f6fc"),
         sec("1-1-1-1",
             [w("icon_box", icon="cash", title="XCG & OB", text="Caribbean guilder and Curaçao sales tax built in.", align="center")],
             [w("icon_box", icon="receipt", title="Legal bills", text="Gapless numbers, CRIB and KvK on every bill.", align="center")],
@@ -126,6 +133,13 @@ def features():
                 "<ul><li>Drag & drop builder with sections and widgets, plus an HTML editor</li><li>Header and footer builders, 3 themes</li>"
                 "<li>Your live menu from the POS and online booking</li><li>SEO score per page, sitemap and schema.org</li></ul>",
                 "site-menu", "Restaurant menu page on the website"),
+        feature("An app for every tablet", "Android tablets & phones",
+                "<p>Install ODG-RESTAURANT on the tablets in your restaurant: it opens full screen from its own icon, like a normal app. "
+                "Give every station its own tablet — the kitchen logs in as chef, the bar as bartender, the waiters take orders at the table.</p>"
+                "<ul><li>Always in sync: it is the same live system, no separate copy</li><li>The screen stays on while the queue is open</li>"
+                "<li>Works on phones too, and the demo is inside the app</li></ul>"
+                "<p><a href=\"/app/\">Open the app start screen</a> on your tablet and tap <strong>Install app</strong>.</p>",
+                "app-start", "The ODG-RESTAURANT app start screen on a tablet", image_left=False),
         sec("1-1-1",
             [w("icon_box", icon="users", title="Roles", text="Administrator, moderator, owner, manager, waiter, bartender and chef.", align="center")],
             [w("icon_box", icon="refresh", title="Safe updates", text="Upload an update: a backup is made first and your data is never touched.", align="center")],

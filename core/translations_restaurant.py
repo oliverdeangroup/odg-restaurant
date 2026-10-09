@@ -842,4 +842,17 @@ STRINGS = {
     "Try again": ("Opnieuw proberen", "Reintentar"),
     "Welcome": ("Welkom", "Bienvenido"),
     "Kitchen": ("Keuken", "Cocina"),
+    # ---------------------------------------------------------------- install help (v1.2.1)
+    "Install the app": ("De app installeren", "Instalar la app"),
+    "Installed!": ("Geïnstalleerd!", "¡Instalada!"),
+    "Open ODG POS from your Start menu, desktop or home screen. It opens full screen, without the browser bar.": ("Open ODG POS vanuit je Startmenu, bureaublad of startscherm. Hij opent schermvullend, zonder browserbalk.", "Abre ODG POS desde el menú Inicio, el escritorio o la pantalla de inicio. Se abre a pantalla completa, sin la barra del navegador."),
+    "Click the app icon in the address bar, or the menu ⋯ (top right) → Apps → Install this site as an app → Install.": ("Klik op het app-icoon in de adresbalk, of op het menu ⋯ (rechtsboven) → Apps → Deze site als app installeren → Installeren.", "Haz clic en el icono de app en la barra de direcciones, o en el menú ⋯ (arriba a la derecha) → Aplicaciones → Instalar este sitio como aplicación → Instalar."),
+    "Click the install icon in the address bar (a screen with an arrow), or the menu ⋮ → Cast, save and share → Install page as app → Install.": ("Klik op het installatie-icoon in de adresbalk (een scherm met een pijl), of op het menu ⋮ → Casten, opslaan en delen → Pagina installeren als app → Installeren.", "Haz clic en el icono de instalar en la barra de direcciones (una pantalla con una flecha), o en el menú ⋮ → Enviar, guardar y compartir → Instalar página como aplicación → Instalar."),
+    "Chrome on Android": ("Chrome op Android", "Chrome en Android"),
+    "Tap the menu ⋮ (top right) → Add to home screen → Install.": ("Tik op het menu ⋮ (rechtsboven) → Toevoegen aan startscherm → Installeren.", "Toca el menú ⋮ (arriba a la derecha) → Añadir a pantalla de inicio → Instalar."),
+    "Tap the menu ☰ → Add page to → Home screen.": ("Tik op het menu ☰ → Pagina toevoegen aan → Startscherm.", "Toca el menú ☰ → Añadir página a → Pantalla de inicio."),
+    "Tap Share (the square with an arrow) → Add to Home Screen → Add.": ("Tik op Deel (het vierkant met een pijl) → Zet op beginscherm → Voeg toe.", "Toca Compartir (el cuadrado con una flecha) → Añadir a pantalla de inicio → Añadir."),
+    "Your browser cannot install apps. Open this page in Chrome or Microsoft Edge.": ("Je browser kan geen apps installeren. Open deze pagina in Chrome of Microsoft Edge.", "Tu navegador no puede instalar apps. Abre esta página en Chrome o Microsoft Edge."),
+    "Already installed? Then it is in your Start menu or on your home screen as ODG POS. If you closed the install question before, your browser keeps quiet for a while — use the steps above.": ("Al geïnstalleerd? Dan staat hij in je Startmenu of op je startscherm als ODG POS. Heb je de installatievraag eerder gesloten, dan zwijgt je browser een tijdje — gebruik dan de stappen hierboven.", "¿Ya instalada? Entonces está en el menú Inicio o en la pantalla de inicio como ODG POS. Si cerraste antes la pregunta de instalación, el navegador calla un tiempo — usa los pasos de arriba."),
+    "Close": ("Sluiten", "Cerrar"),
 }

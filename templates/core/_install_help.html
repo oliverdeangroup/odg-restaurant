@@ -1,0 +1,16 @@
+{% comment %}How to install the app, per browser. Opened by every [data-install] button when the browser gives no install dialog.{% endcomment %}
+<div class="modal" id="install-help"><div class="modal-box">
+  <div class="modal-head"><h2>{% icon "download" 18 %} {% t "Install the app" %}</h2><button class="modal-close" type="button" aria-label="{% t 'Close' %}">{% icon "x" 18 %}</button></div>
+  <div class="modal-body stack install-help">
+    <div class="ih-done" hidden><p class="ih-ok">{% icon "check" 18 %} <strong>{% t "Installed!" %}</strong></p><p>{% t "Open ODG POS from your Start menu, desktop or home screen. It opens full screen, without the browser bar." %}</p></div>
+    <div class="ih-steps">
+      <p data-ih="edge"><strong>Microsoft Edge</strong><br>{% t "Click the app icon in the address bar, or the menu ⋯ (top right) → Apps → Install this site as an app → Install." %}</p>
+      <p data-ih="chrome"><strong>Google Chrome</strong><br>{% t "Click the install icon in the address bar (a screen with an arrow), or the menu ⋮ → Cast, save and share → Install page as app → Install." %}</p>
+      <p data-ih="android"><strong>{% t "Chrome on Android" %}</strong><br>{% t "Tap the menu ⋮ (top right) → Add to home screen → Install." %}</p>
+      <p data-ih="samsung"><strong>Samsung Internet</strong><br>{% t "Tap the menu ☰ → Add page to → Home screen." %}</p>
+      <p data-ih="ios"><strong>iPad / iPhone (Safari)</strong><br>{% t "Tap Share (the square with an arrow) → Add to Home Screen → Add." %}</p>
+      <p data-ih="other">{% t "Your browser cannot install apps. Open this page in Chrome or Microsoft Edge." %}</p>
+      <p class="muted small">{% t "Already installed? Then it is in your Start menu or on your home screen as ODG POS. If you closed the install question before, your browser keeps quiet for a while — use the steps above." %}</p>
+    </div>
+  </div>
+</div></div>

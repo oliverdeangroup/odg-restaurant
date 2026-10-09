@@ -275,3 +275,6 @@ body.kds .main { padding-left: 18px; padding-right: 18px; }
 .badge[hidden] { display: none; }
 .stat .num { white-space: nowrap; font-size: clamp(17px, 1.6vw, 24px); }
 .demo-roles a.dr-site { background: #1b1b1b; color: var(--gold); margin-left: 6px; display: inline-flex; gap: 4px; align-items: center; }
+.install-help p { margin: 0; }
+.install-help [data-ih] { padding: 14px 16px; border-radius: 12px; background: var(--info-bg); line-height: 1.6; }
+.install-help .ih-ok { display: flex; gap: 8px; align-items: center; color: var(--ok); font-size: 17px; }

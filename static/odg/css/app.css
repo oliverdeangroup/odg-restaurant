@@ -36,3 +36,7 @@ body.app-start { margin: 0; min-height: 100vh; font: 15px/1.55 var(--font); colo
 .as-install .as-btn { padding: 11px 18px; font-size: 15px; background: var(--gold); border-color: var(--gold); color: #1b1b1b; }
 @media (max-width: 800px) { .as-grid { grid-template-columns: 1fr; } }
 @media (max-width: 420px) { .as-roles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .as-panel { padding: 20px; } }
+.install-help p { margin: 0; }
+.install-help [data-ih] { padding: 14px 16px; border-radius: 12px; background: var(--info-bg); color: var(--text); line-height: 1.6; }
+.install-help .ih-ok { display: flex; gap: 8px; align-items: center; color: var(--ok); font-size: 17px; }
+body.app-start .modal-box { color: var(--text); }

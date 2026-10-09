@@ -46,7 +46,7 @@
       <div class="dd-menu">
         <div class="dd-head"><strong>{{ user }}</strong><small>{{ user.get_role_display|tr }}</small></div>
         <a href="{% url 'core:profile' %}">{% icon "user" 16 %} {% t "My profile" %}</a>
-        <a href="#" data-install hidden>{% icon "download" 16 %} {% t "Install app" %}</a>
+        <a href="#" data-install>{% icon "download" 16 %} {% t "Install app" %}</a>
         <a href="#" data-sound-toggle>{% icon "bell" 16 %} <span data-sound-label>{% t "Sound alerts" %}</span></a>
         <a href="{% url 'core:logout' %}">{% icon "logout" 16 %} {% t "Log out" %}</a>
       </div>
@@ -102,6 +102,7 @@
   {% block content %}{% endblock %}
 </main>
 <div class="toasts" id="toasts" aria-live="polite"></div>
+{% include "core/_install_help.html" %}
 <script>
 window.ODG = {
   live: "{% url 'pos:live' %}",

@@ -61,6 +61,12 @@ orders, payments and bills are kept because Curaçao requires 10 years of bookke
 - **Public demo** at `/demo/`: no login, one private copy per visitor (cookie, or IP address), with the waiter,
   bartender, chef, manager and owner dashboards (not the administrator). Visitors switch role in the yellow bar.
   Copies are removed 24 h after the last visit; all times are moved to "now" so the demo always looks live.
+- **Demo restaurant website** at `/demo/site/`: *Dinosaur BBQ*, a fictional barbecue restaurant built with the website
+  builder (`core/demo_site.py`). It runs on the visitor's own demo copy, so a table booked there appears in the demo
+  dashboards, and a product marked sold out in the demo POS shows as sold out on the menu.
+- **Product website** (restaurant.oliverdeangroup.com itself): `python manage.py marketing_site` builds the
+  ODG-RESTAURANT pages (Home, Features, Contact) with screenshots and the tour video (`website/marketing.py`).
+  It only replaces untouched starter pages. Fill in the contact details in Website → Brand.
 
 ## Working on your PC
 
@@ -78,6 +84,8 @@ Open http://127.0.0.1:8000. The local test login is in `DEV-LOGINS.txt` (only on
 | `python manage.py demo_build` | Rebuilds the public demo restaurant (also done by every update) |
 | `python manage.py make_update 1.1.0 --notes "..."` | Builds an update ZIP in `dist/` |
 | `python manage.py i18n_strings` | Lists texts that still need Dutch / Spanish |
+| `python manage.py marketing_site` | Builds the ODG-RESTAURANT product website (Home, Features, Contact) |
+| `python tools/capture.py` | New screenshots + tour video of the demo for the product website (PC only, needs `pip install playwright` and Edge) |
 
 Translations: `core/translations.py` and `core/translations_restaurant.py`.
 

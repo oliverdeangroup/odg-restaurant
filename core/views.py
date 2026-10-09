@@ -281,13 +281,25 @@ USER_KINDS = {
 }
 
 
-def _user_list(request, kind):
-    cfg = USER_KINDS[kind]
-    if not can(request.user, cfg["perm"]):
+def _employee_roles(user):
+    """Staff roles, plus administrators and moderators for those who manage system users."""
+    roles = list(STAFF_ROLES) if can(user, "users_staff") else []
+    if can(user, "users_system"):
+        roles += list(SYSTEM_ROLES)
+    return roles
+
+
+def employees(request):
+    """Users → Employees: everyone who works with the system, in one list."""
+    if not request.user.is_authenticated:
+        return redirect(f"/login/?next={request.path}")
+    roles = _employee_roles(request.user)
+    if not roles:
         return forbidden(request)
-    qs = User.objects.filter(role__in=cfg["roles"])
-    if kind == "system":
-        qs = User.objects.filter(Q(role__in=cfg["roles"]) | Q(is_superuser=True))
+    cfg = {"title": "Employees", "roles": roles}
+    qs = User.objects.filter(role__in=roles)
+    if can(request.user, "users_system"):
+        qs = User.objects.filter(Q(role__in=roles) | Q(is_superuser=True))
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(
@@ -304,24 +316,23 @@ def _user_list(request, kind):
         qs = qs.filter(is_active=False)
     s = SystemSettings.load()
     counts = {
-        "owner": User.objects.filter(role=Role.OWNER, is_active=True).count(),
-        "manager": User.objects.filter(role=Role.MANAGER, is_active=True).count(),
         "max_managers": s.max_managers,
-        "by_role": [(r.value, r.label, User.objects.filter(role=r, is_active=True).count()) for r in cfg["roles"]],
+        "by_role": [(r.value, r.label, User.objects.filter(role=r, is_active=True).count()) for r in roles],
     }
     page = Paginator(qs.order_by("role", "first_name", "last_name"), 40).get_page(request.GET.get("page"))
     return render(request, "core/users_list.html", {
-        "kind": kind, "cfg": cfg, "page": page, "q": q, "status": status, "counts": counts, "role": role,
-        "role_choices": [(r.value, r.label) for r in cfg["roles"]] if len(cfg["roles"]) > 1 else [],
+        "cfg": cfg, "page": page, "q": q, "status": status, "counts": counts, "role": role,
+        "role_choices": [(r.value, r.label) for r in roles],
+        "kind_of": {r.value: ("system" if r in SYSTEM_ROLES else "staff") for r in Role},
     })
 
 
 def users_system(request):
-    return _user_list(request, "system")
+    return redirect("/dashboard/users/employees/?role=admin")
 
 
 def users_staff(request):
-    return _user_list(request, "staff")
+    return redirect("core:employees")
 
 
 def user_edit(request, kind, pk=None):
@@ -334,6 +345,8 @@ def user_edit(request, kind, pk=None):
         return forbidden(request)
     if pk:
         instance = get_object_or_404(User, pk=pk)
+        if kind == "staff" and (instance.role in SYSTEM_ROLES or instance.is_superuser):
+            return redirect("core:user_edit", "system", pk)
     else:
         wanted = request.GET.get("role")
         instance = User(role=wanted if wanted in [r.value for r in cfg["roles"]] else cfg["roles"][0])
@@ -355,7 +368,7 @@ def user_edit(request, kind, pk=None):
             messages.success(request, _("User {0} created. Temporary password: {1}").format(user.username, generated))
         else:
             messages.success(request, _("{0} was saved.").format(user))
-        return redirect(f"core:users_{kind}")
+        return redirect("core:employees")
     return render(request, "core/user_form.html", {"kind": kind, "cfg": cfg, "form": form, "obj": instance})
 
 
@@ -367,7 +380,7 @@ def user_action(request, kind, pk):
     user = get_object_or_404(User, pk=pk)
     if user == request.user or (user.is_superuser and not request.user.is_superuser):
         messages.error(request, _("You cannot change this account."))
-        return redirect(f"core:users_{kind}")
+        return redirect("core:employees")
     action = request.POST.get("action")
     if action == "toggle":
         user.is_active = not user.is_active
@@ -388,7 +401,7 @@ def user_action(request, kind, pk):
             user.delete()
             log_activity(request, "delete", f"Deleted user {name}", "users")
             messages.success(request, _("{0} was deleted.").format(name))
-    return redirect(f"core:users_{kind}")
+    return redirect("core:employees")
 
 
 # ------------------------------------------------------------------ settings

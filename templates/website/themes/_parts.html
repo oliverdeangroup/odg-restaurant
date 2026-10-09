@@ -2,7 +2,7 @@
 {% if part == "logo" %}
 <a class="logo" href="/" aria-label="{{ brand.name }}">
   {% if brand.logo_light and light %}<img src="{{ brand.logo_light.url }}" alt="{{ brand.name }}">{% elif brand.logo %}<img src="{{ brand.logo.url }}" alt="{{ brand.name }}">{% endif %}
-  {% if not brand.logo %}<span class="logo-text"><strong>{{ brand.short_name|default:brand.name }}</strong>{% if brand.motto and show_motto %}<small>{{ brand.motto }}</small>{% endif %}</span>{% endif %}
+  {% if not brand.logo or brand.short_name %}<span class="logo-text"><strong>{{ brand.short_name|default:brand.name }}</strong>{% if brand.motto and show_motto %}<small>{{ brand.motto }}</small>{% endif %}</span>{% endif %}
 </a>
 
 {% elif part == "menu_items" %}

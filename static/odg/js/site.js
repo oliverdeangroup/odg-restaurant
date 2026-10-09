@@ -55,4 +55,13 @@
     });
     load();
   });
+
+  // Browser-recorded .webm files have no length: find it once so the seek bar works.
+  document.querySelectorAll("video[data-fix-duration]").forEach(function (v) {
+    v.addEventListener("loadedmetadata", function () {
+      if (v.duration !== Infinity && !isNaN(v.duration)) return;
+      v.currentTime = 1e101;
+      v.addEventListener("timeupdate", function reset() { v.removeEventListener("timeupdate", reset); v.currentTime = 0; });
+    });
+  });
 })();

@@ -26,7 +26,7 @@ def quick_actions(perms):
         ("finance", "Finance", "chart", "finance:overview"),
         ("products", "Products", "list", "pos:products"),
         ("website", "Website", "globe", "website:pages"),
-        ("users_staff", "Add a user", "user", "core:users_staff"),
+        ("users_staff", "Employees", "user", "core:employees"),
     ):
         if perm in perms:
             acts.append({"label": label, "icon": icon, "url": reverse(url)})

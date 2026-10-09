@@ -36,7 +36,7 @@ from django.utils import timezone
 
 COOKIE = "odg_demo"
 COOKIE_SALT = "odg-demo"
-DEMO_PATHS = ("/dashboard", "/logout/")
+DEMO_PATHS = ("/dashboard", "/logout/", "/demo/site/")
 ROLES = ("waiter", "bartender", "chef", "manager", "owner")
 DEMO_USERNAMES = {r: f"demo.{r}" for r in ROLES}
 CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
@@ -74,9 +74,11 @@ def media_root():
     return st["media"] if st else None
 
 
-def _register(alias, db_path):
+def _register(alias, db_path, create=False):
+    # mode=rw: never create an empty database when a copy is being replaced at that moment.
+    name = str(db_path) if create else f"file:{Path(db_path).as_posix()}?mode=rw"
     connections.settings[alias] = {
-        "ENGINE": "django.db.backends.sqlite3", "NAME": str(db_path), "ATOMIC_REQUESTS": False,
+        "ENGINE": "django.db.backends.sqlite3", "NAME": name, "ATOMIC_REQUESTS": False,
         "AUTOCOMMIT": True, "CONN_MAX_AGE": 0, "CONN_HEALTH_CHECKS": False, "OPTIONS": {"timeout": 20},
         "TIME_ZONE": None, "USER": "", "PASSWORD": "", "HOST": "", "PORT": "",
         "TEST": {"CHARSET": None, "COLLATION": None, "MIGRATE": True, "MIRROR": None, "NAME": None},
@@ -95,14 +97,16 @@ def _unregister(alias):
 class use:
     """Context manager: route all ORM queries and uploads to a demo copy."""
 
-    def __init__(self, folder, info=None):
+    def __init__(self, folder, info=None, create=False):
         self.folder = Path(folder)
         self.alias = "demo_" + hashlib.sha1(str(self.folder).encode()).hexdigest()[:12]
         self.info = info or {}
+        self.create = create
 
     def __enter__(self):
-        (self.folder / "media").mkdir(parents=True, exist_ok=True)
-        _register(self.alias, self.folder / "db.sqlite3")
+        if self.create:
+            (self.folder / "media").mkdir(parents=True, exist_ok=True)
+        _register(self.alias, self.folder / "db.sqlite3", self.create)
         self.token = _state.set({"alias": self.alias, "media": self.folder / "media", **self.info})
         return self
 
@@ -141,7 +145,7 @@ def schema_stamp():
     for app in ("core", "pos", "finance", "website"):
         for f in sorted((settings.BASE_DIR / app / "migrations").glob("0*.py")):
             h.update(f.name.encode())
-    h.update(b"seed-1")  # bump when demo_seed changes
+    h.update(b"seed-2")  # bump when demo_seed changes
     return h.hexdigest()[:16]
 
 
@@ -172,7 +176,7 @@ def build_template():
         try:
             tmp = demo_dir() / f"template-new-{os.getpid()}"
             shutil.rmtree(tmp, ignore_errors=True)
-            with use(tmp) as ctx:
+            with use(tmp, create=True) as ctx:
                 call_command("migrate", database=ctx.alias, verbosity=0, interactive=False)
                 built = demo_seed.seed()
             (tmp / "stamp").write_text(schema_stamp())
@@ -253,23 +257,38 @@ def _shift_times(db_path, built_at):
 
 
 def _copy_template(code):
+    """Makes a fresh copy next to the visitor's folder and swaps it in at once,
+    so requests that arrive meanwhile (the live screens poll) never see a half copy."""
     target = sandbox_dir(code)
-    shutil.rmtree(target, ignore_errors=True)
-    (target / "media").mkdir(parents=True)
-    shutil.copy2(template_dir() / "db.sqlite3", target / "db.sqlite3")
+    new = target.with_name(code + ".new")
+    shutil.rmtree(new, ignore_errors=True)
+    (new / "media").mkdir(parents=True)
+    shutil.copy2(template_dir() / "db.sqlite3", new / "db.sqlite3")
     built = template_dir() / "built"
     if built.exists():
-        _shift_times(target / "db.sqlite3", datetime.fromisoformat(built.read_text().strip()))
+        _shift_times(new / "db.sqlite3", datetime.fromisoformat(built.read_text().strip()))
     src_media = template_dir() / "media"
     for root, _dirs, files in os.walk(src_media):
         rel = Path(root).relative_to(src_media)
-        (target / "media" / rel).mkdir(parents=True, exist_ok=True)
+        (new / "media" / rel).mkdir(parents=True, exist_ok=True)
         for f in files:
-            dst = target / "media" / rel / f
+            dst = new / "media" / rel / f
             try:
                 os.link(Path(root) / f, dst)  # hard link: no extra disk space
             except OSError:
                 shutil.copy2(Path(root) / f, dst)
+    old = target.with_name(code + ".old")
+    shutil.rmtree(old, ignore_errors=True)
+    try:
+        if target.exists():
+            target.rename(old)
+        new.rename(target)
+    except OSError:
+        # Windows (development PC) cannot rename a folder with an open database.
+        target.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(new / "db.sqlite3", target / "db.sqlite3")
+        shutil.rmtree(new, ignore_errors=True)
+    shutil.rmtree(old, ignore_errors=True)
 
 
 def create_sandbox(role, ip):
@@ -351,13 +370,14 @@ class DemoMiddleware:
         code = request.get_signed_cookie(COOKIE, default=None, salt=COOKIE_SALT)
         sb = DemoSandbox.objects.filter(code=code).first() if code else None
         if sb is None or not (sandbox_dir(sb.code) / "db.sqlite3").exists() or sb.is_expired:
-            resp = redirect("/demo/?expired=1")
+            # On the demo website a fresh copy is made right away; the dashboards go back to /demo/.
+            resp = redirect(request.path if request.path.startswith("/demo/site/") else "/demo/?expired=1")
             resp.delete_cookie(COOKIE)
             resp.delete_cookie(settings.SESSION_COOKIE_NAME)
             return resp
         if sb.stamp != schema_stamp():
             reset_sandbox(sb)
-            return redirect("/dashboard/demo/enter/")
+            return redirect(request.path if request.path.startswith("/demo/site/") else "/dashboard/demo/enter/")
         request.demo = sb
         with use(sandbox_dir(sb.code), {"code": sb.code}):
             response = self.get_response(request)

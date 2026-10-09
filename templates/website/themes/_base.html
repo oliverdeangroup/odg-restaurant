@@ -8,7 +8,7 @@
 {% if seo.meta_keywords %}<meta name="keywords" content="{{ seo.meta_keywords }}">{% endif %}
 <meta name="robots" content="{% if noindex or not_found %}noindex, nofollow{% else %}index, follow, max-image-preview:large{% endif %}">
 {% if not not_found %}<link rel="canonical" href="{{ canonical }}">{% endif %}
-<meta property="og:type" content="restaurant">
+<meta property="og:type" content="{% if seo.schema_type == 'Organization' %}website{% else %}restaurant{% endif %}">
 <meta property="og:site_name" content="{{ brand.name }}">
 <meta property="og:title" content="{{ meta_title }}">
 {% if meta_description %}<meta property="og:description" content="{{ meta_description }}">{% endif %}
@@ -33,8 +33,17 @@
 <body class="site theme-{{ look.theme }} hl-{{ look.header_layout }}{% if look.header_sticky %} sticky{% endif %}{% if is_home %} is-home{% endif %}{% if over_hero %} over-hero{% endif %}">
 {% include "core/_icons.html" %}
 <a class="skip" href="#main">{% t "Skip to content" %}</a>
+{% if demo_site %}
+<div class="demo-ribbon">
+  <span class="dr-tag">DEMO</span>
+  <span class="dr-text">{% t "This is the website of a demo restaurant, made with ODG-RESTAURANT. Book a table here and see it arrive in the dashboards:" %}</span>
+  <span class="dr-links">
+    <a href="/dashboard/demo/enter/?as=manager">{% t "Manager" %}</a><a href="/dashboard/demo/enter/?as=waiter">{% t "Waiter" %}</a><a href="/dashboard/demo/enter/?as=chef">{% t "Chef" %}</a><a href="/dashboard/demo/enter/?as=owner">{% t "Owner" %}</a><a href="/demo/" class="dr-all">{% t "All demos" %}</a>
+  </span>
+</div>
+{% endif %}
 {% block body %}{% endblock %}
-{% if sys.demo_enabled %}<a class="demo-fab" href="/demo/">{% icon "pos" 16 %} {% t "Try the demo" %}</a>{% endif %}
+{% if sys.demo_enabled and not demo_site and look.header_cta_link != "/demo/" %}<a class="demo-fab" href="/demo/">{% icon "pos" 16 %} {% t "Try the demo" %}</a>{% endif %}
 <script src="{% static 'odg/js/site.js' %}?v={{ odg_version }}" defer></script>
 </body>
 </html>

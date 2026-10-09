@@ -94,3 +94,32 @@ class DemoTests(TestCase):
             latest = Order.objects.filter(status__in=Order.OPEN_STATUSES).order_by("-opened_at").first()
             self.assertLess((timezone.now() - latest.opened_at).total_seconds(), 3600)
             self.assertTrue(all(o.code.isdigit() for o in Order.objects.all()[:50]))
+
+    def test_demo_restaurant_website_is_synced(self):
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        from pos.models import Reservation
+
+        r = self.client.get("/demo/site/", REMOTE_ADDR="203.0.113.20")
+        self.assertEqual(r.status_code, 302)  # a private copy is made first
+        r = self.client.get("/demo/site/", REMOTE_ADDR="203.0.113.20")
+        self.assertContains(r, "Dinosaur BBQ")
+        self.assertContains(r, 'href="/demo/site/menu/"')
+        self.assertContains(r, 'action="/demo/site/book/"')
+        self.assertContains(r, "noindex")
+        self.assertContains(self.client.get("/demo/site/menu/"), "Smoked brisket")
+        sb = DemoSandbox.objects.get(ip="203.0.113.20")
+        day = (timezone.localdate() + timedelta(days=3)).isoformat()
+        slots = self.client.get(f"/demo/site/book/slots/?date={day}&guests=2").json()["slots"]
+        free = next(s for s in slots if s["free"])
+        r = self.client.post("/demo/site/book/", {"date": day, "time": free["time"], "guests": 2, "first_name": "Demo",
+                                                    "last_name": "Visitor", "email": "visitor@example.com"})
+        self.assertTrue(r.json()["ok"])
+        with demo.use(demo.sandbox_dir(sb.code)):
+            self.assertTrue(Reservation.objects.filter(customer__email="visitor@example.com").exists())
+        self.assertFalse(Reservation.objects.exists())  # the real restaurant is not touched
+        # The same visitor sees it in the demo dashboard
+        self.client.get("/dashboard/demo/enter/?as=manager")
+        self.assertContains(self.client.get(f"/dashboard/pos/reservations/?date={day}"), "Visitor")

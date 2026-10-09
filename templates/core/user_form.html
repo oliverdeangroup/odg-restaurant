@@ -1,6 +1,6 @@
 {% extends "core/base_dashboard.html" %}
 {% block title %}{% if obj.pk %}{{ obj }}{% else %}{% t "New" %}{% endif %}{% endblock %}
-{% block crumbs %}<div class="crumbs">{% t "Users" %} / <a href="{% url 'core:users_'|add:kind %}">{{ cfg.title|tr }}</a> /</div>{% endblock %}
+{% block crumbs %}<div class="crumbs">{% t "Users" %} / <a href="{% url 'core:employees' %}">{% t "Employees" %}</a> /</div>{% endblock %}
 {% block heading %}{% if obj.pk %}{{ obj }}{% else %}{% t "Add user" %}{% endif %}{% endblock %}
 {% block content %}
 <form method="post" enctype="multipart/form-data" novalidate>
@@ -26,7 +26,7 @@
       {% include "core/_field.html" with f=form.is_active %}
     </div>
     <div class="form-actions">
-      <a class="btn" href="{% url 'core:users_'|add:kind %}">{% t "Cancel" %}</a>
+      <a class="btn" href="{% url 'core:employees' %}">{% t "Cancel" %}</a>
       <button class="btn primary">{% icon "check" 16 %} {% t "Save" %}</button>
     </div>
   </div>

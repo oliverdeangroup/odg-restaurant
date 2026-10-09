@@ -346,6 +346,10 @@ def site_ctx(request, page=None):
             schema["openingHoursSpecification"] = spec
     except Exception:  # noqa: BLE001
         pass
+    if seo_cfg.schema_type == "Organization":
+        # A company website (e.g. the software vendor): no restaurant details.
+        schema = {k: v for k, v in schema.items() if k not in (
+            "servesCuisine", "priceRange", "acceptsReservations", "openingHoursSpecification")}
     graph = [schema]
     if seo_cfg.breadcrumbs and page and not page.is_homepage:
         crumbs = [{"@type": "ListItem", "position": 1, "name": brand_obj.name, "item": base + "/"}]
@@ -363,7 +367,10 @@ def site_ctx(request, page=None):
         "schema_json": json.dumps(graph if len(graph) > 1 else schema, ensure_ascii=False).replace("</", "<\\/"),
         "theme_template": f"website/themes/{look.theme}.html",
         "sys": SystemSettings.load(),
+        "demo_site": getattr(request, "demo_site", False),
     }
+    if ctx["demo_site"]:
+        ctx["noindex"] = True
     from core.i18n import get_language
 
     ctx["lang"] = get_language()

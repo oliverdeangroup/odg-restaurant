@@ -16,7 +16,7 @@
         {% if it.notes %}<small><em>“{{ it.notes }}”</em></small>{% endif %}
         <small><span class="pill s-{{ it.status }}">{% if it.status == "ready" %}{% icon "bell" 11 %} {% t "Ready to pick up" %}{% else %}{{ it.get_status_display|tr }}{% endif %}</span>
           <span class="pill {{ it.station }}">{{ it.get_station_display|tr }}</span>
-          {% if it.status == "queued" or it.status == "preparing" %}<span data-since="{{ it.submitted_at|ts }}" data-due="{{ it.due_at|ts }}"></span>{% endif %}
+          {% if it.status == "queued" or it.status == "preparing" %}<span class="wait-timer" title="{% t 'Waiting' %}">{% icon "clock" 12 %}<span data-since="{{ it.submitted_at|ts }}"></span></span>{% endif %}
           {% if it.paid %}<span class="pill ok">{% t "Paid" %}</span>{% endif %}</small>
       </div>
       <span class="money small">{{ it.line_total|money }}</span>

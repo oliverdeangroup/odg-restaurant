@@ -57,6 +57,7 @@
   <span class="demo-tag">DEMO</span>
   <span class="demo-roles">{% t "View as" %}:
     {% for r, label in demo_roles %}<a href="/dashboard/demo/enter/?as={{ r }}" class="{% if user.role == r %}on{% endif %}">{{ label|tr }}</a>{% endfor %}
+    <a href="/demo/site/" target="_blank" rel="noopener" class="dr-site">{% icon "globe" 13 %} {% t "Restaurant website" %}</a>
   </span>
   <span class="demo-hint">{% t "Code" %} <strong>{{ request.demo.code }}</strong> · {% t "Only you see your changes." %}</span>
   <span class="demo-actions">

@@ -25,7 +25,8 @@ LAYOUTS = {"1": [12], "1-1": [6, 6], "1-1-1": [4, 4, 4], "1-1-1-1": [3, 3, 3, 3]
 PADDINGS = ("none", "sm", "md", "lg", "xl")
 WIDTHS = ("boxed", "narrow", "full")
 ICONS = ("star", "clock", "pin", "phone", "mail", "calendar", "users", "glass", "chef", "leaf", "heart", "award",
-         "wine", "fish", "coffee", "music", "car", "wifi", "sun", "gift")
+         "wine", "fish", "coffee", "music", "car", "wifi", "sun", "gift", "fire", "pos", "cash", "card", "receipt",
+         "grid", "chart", "globe", "shield", "refresh", "table", "bell", "check", "lock", "phone")
 
 # type → {field: kind}. Kinds: str (short text), long (multi-line text), html, url, img, int, bool, choice:a|b, list
 WIDGETS = {
@@ -39,7 +40,7 @@ WIDGETS = {
     "divider": {"style": "choice:line|dots|ornament"},
     "icon_box": {"icon": "choice:" + "|".join(ICONS), "title": "str", "text": "long", "align": "choice:center|left"},
     "gallery": {"images": "list:src,alt", "columns": "choice:2|3|4"},
-    "video": {"url": "url", "caption": "str"},
+    "video": {"url": "url", "poster": "img", "caption": "str"},
     "map": {"query": "str", "height": "int"},
     "reviews": {"items": "list:name,rating,text,source", "title": "str", "columns": "choice:1|2|3"},
     "menu": {"categories": "ids", "show_prices": "bool", "show_images": "bool", "show_descriptions": "bool",
@@ -210,7 +211,8 @@ FIELD_LABELS = {
     "width": "Width", "style": "Style", "new_tab": "Open in a new tab", "title": "Title", "subtitle": "Subtitle",
     "button_text": "Button text", "button_link": "Button link", "button2_text": "Second button text",
     "button2_link": "Second button link", "image": "Background image", "overlay": "Darkening (0–90)", "height": "Height",
-    "icon": "Icon", "images": "Images", "columns": "Columns", "url": "YouTube or Vimeo link", "query": "Address or place (empty = your address)",
+    "icon": "Icon", "images": "Images", "columns": "Columns", "url": "YouTube or Vimeo link, or a .mp4 / .webm file",
+    "poster": "Picture before the video starts", "query": "Address or place (empty = your address)",
     "items": "Reviews", "categories": "Categories (none = all)", "show_prices": "Show prices", "show_images": "Show photos",
     "show_descriptions": "Show descriptions", "show_social": "Show social media", "code": "HTML code",
     "name": "Name", "rating": "Stars", "source": "Source (Google, TripAdvisor …)",

@@ -1,4 +1,6 @@
-"""Public demo: landing page, start / resume with a code, switch role, reset and exit."""
+"""Public demo: landing page, start / resume with a code, switch role, reset and exit,
+and the website of the demo restaurant (Dinosaur BBQ)."""
+import re
 from datetime import timedelta
 
 from django.conf import settings
@@ -6,9 +8,11 @@ from django.contrib.auth import login
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from . import demo
+from .i18n import _
 from .models import DemoSandbox, SystemSettings, User
 from .utils import client_ip
 
@@ -30,11 +34,18 @@ def _enabled():
 
 
 def landing(request):
+    """The demo page, in the design of the public website."""
+    from website.views import site_ctx
+
     _enabled()
-    return render(request, "core/demo.html", {
+    ctx = site_ctx(request)
+    ctx.update({
         "current": demo.find_for_visitor(request), "expired": request.GET.get("expired"),
         "error": request.GET.get("error"), "hours": demo.HOURS_IDLE, "roles": demo.ROLES,
+        "meta_title": f"{_('Live demo')} | {ctx['brand'].name}", "noindex": False,
+        "meta_description": _("Try the restaurant system as waiter, bartender, chef, manager or owner. No login needed: you get your own private demo restaurant."),
     })
+    return render(request, "core/demo.html", ctx)
 
 
 @require_POST
@@ -98,3 +109,58 @@ def exit_demo(request):
     resp.delete_cookie(demo.COOKIE)
     resp.delete_cookie(settings.SESSION_COOKIE_NAME)
     return resp
+
+
+# ------------------------------------------------------------------ demo restaurant website
+
+SITE = "/demo/site/"
+# Links on the demo website are written for "/"; inside the demo they live under /demo/site/.
+_LINK = re.compile(r'((?:href|action|data-slots)=")/(?!/|static/|media/|demo/|dashboard|login|logout)')
+
+
+def _site(request, view, *args, **kwargs):
+    """Runs a public website view inside the visitor's demo copy."""
+    _enabled()
+    if request.demo is None:
+        if request.method != "GET":
+            raise Http404
+        ip = client_ip(request)
+        sb = demo.find_for_visitor(request)
+        if sb is None:
+            recent = DemoSandbox.objects.filter(ip=ip, created_at__gte=timezone.now() - timedelta(hours=1)).count() if ip else 0
+            if recent >= demo.MAX_NEW_PER_IP_HOUR:
+                return redirect("/demo/?error=limit")
+            sb = demo.create_sandbox("waiter", ip)
+        return demo.set_cookie(redirect(request.get_full_path()), sb.code)
+    request.demo_site = True
+    response = view(request, *args, **kwargs)
+    if response.get("Content-Type", "").startswith("text/html") and not response.streaming:
+        response.content = _LINK.sub(lambda m: m.group(1) + SITE, response.content.decode("utf-8")).encode("utf-8")
+    if response.status_code in (301, 302) and response.get("Location", "").startswith("/") and not response["Location"].startswith("/demo/"):
+        response["Location"] = SITE.rstrip("/") + response["Location"]
+    return response
+
+
+def site_home(request):
+    from website import views as site
+
+    return _site(request, site.home)
+
+
+def site_page(request, slug):
+    from website import views as site
+
+    return _site(request, site.page_view, slug)
+
+
+def site_slots(request):
+    from website import views as site
+
+    return _site(request, site.booking_slots)
+
+
+@csrf_exempt
+def site_book(request):
+    from website import views as site
+
+    return _site(request, site.book)

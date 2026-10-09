@@ -275,3 +275,40 @@ class WebsiteTests(Base):
     def test_languages(self):
         self.assertContains(self.client.get("/login/?lang=nl"), "Inloggen")
         self.assertContains(self.client.get("/login/?lang=es"), "Iniciar sesión")
+
+
+class V11Tests(Base):
+    def test_employees_tab(self):
+        self.login(Role.ADMIN)
+        r = self.client.get(reverse("core:employees"))
+        self.assertContains(r, "chef@example.com")
+        self.assertContains(r, "moderator@example.com")  # admins also see system users
+        self.login(Role.MODERATOR)
+        r = self.client.get(reverse("core:employees"))
+        self.assertContains(r, "chef@example.com")
+        self.assertNotContains(r, "admin@example.com")
+        self.login(Role.MANAGER)
+        self.assertEqual(self.client.get(reverse("core:employees")).status_code, 403)
+
+    def test_live_overview_is_first_pos_tab(self):
+        from core.nav import MENU
+
+        pos = dict((label, subs) for label, _i, subs in MENU)["POS"]
+        self.assertEqual(pos[0][1], "pos:overview")
+        users = dict((label, subs) for label, _i, subs in MENU)["Users"]
+        self.assertEqual([s[0] for s in users], ["Employees", "Customers"])
+
+    def test_product_website(self):
+        import tempfile
+
+        from django.core.management import call_command
+        from django.test import override_settings
+
+        with override_settings(MEDIA_ROOT=tempfile.mkdtemp()):
+            call_command("marketing_site")
+        r = self.client.get("/")
+        self.assertContains(r, "Run your whole restaurant from one screen")
+        self.assertContains(r, "demo-tour.webm")
+        self.assertContains(r, '"@type": "Organization"')
+        self.assertContains(self.client.get("/features/"), "Chef &amp; bartender")
+        self.assertContains(self.client.get("/demo/"), "Visit Dinosaur BBQ")

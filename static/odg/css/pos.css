@@ -122,7 +122,8 @@ body.is-demo .menu-panel { top: calc(var(--top-h) + 54px); }
 .prod-tile[disabled] { opacity: .45; cursor: not-allowed; }
 .prod-tile .sold { position: absolute; top: 8px; right: 8px; font-size: 10px; font-weight: 800; color: var(--err); text-transform: uppercase; }
 .prod-tile .added { position: absolute; top: 8px; right: 8px; background: var(--navy); color: #fff; border-radius: 99px; min-width: 22px; height: 22px; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
-.guest-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.guest-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.wait-timer { display: inline-flex; align-items: center; gap: 3px; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; font-weight: 600; }
 .guest-tabs button { flex: none; border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 6px 12px; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer; }
 .guest-tabs button.on { background: var(--navy); color: #fff; border-color: var(--navy); }
 .guest-tabs button .n { font-weight: 600; opacity: .7; margin-left: 4px; }
@@ -273,3 +274,4 @@ body.kds .main { padding-left: 18px; padding-right: 18px; }
 }
 .badge[hidden] { display: none; }
 .stat .num { white-space: nowrap; font-size: clamp(17px, 1.6vw, 24px); }
+.demo-roles a.dr-site { background: #1b1b1b; color: var(--gold); margin-left: 6px; display: inline-flex; gap: 4px; align-items: center; }

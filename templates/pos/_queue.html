@@ -14,8 +14,8 @@
         <small>{{ t.order.code }}{% if t.order.waiter %} · {{ t.order.waiter.first_name|default:t.order.waiter.username }}{% endif %}</small>
       </div>
       <div class="timer"><span data-since="{{ t.submitted|ts }}" data-due="{{ t.due|ts }}" data-grace="{% widthratio pos_cfg.late_after_minutes 1 60000 %}">0:00</span>
-        <small>{% t "in" %} {{ t.submitted|time:"H:i" }} · {% t "ready" %} ±{{ t.due|time:"H:i" }}</small>
-        <small>{% t "est." %} {{ t.est }} min</small></div>
+        <small>{% t "Ordered" %} {{ t.submitted|time:"H:i" }}</small>
+        <small>{% t "Due" %} {{ t.due|time:"H:i" }} · {{ t.est }} min</small></div>
     </div>
     <div class="ticket-items">
       {% for it in t.items %}

@@ -76,7 +76,10 @@ def widget_context(w, ctx):
     if t == "map":
         return {"map_src": map_src(d.get("query"), ctx["brand"])}
     if t == "video":
-        return {"video_src": video_src(d.get("url"))}
+        url = d.get("url") or ""
+        if re.search(r"\.(mp4|webm)(\?.*)?$", url, re.I):
+            return {"video_file": url}
+        return {"video_src": video_src(url)}
     if t == "reservation":
         from pos.models import PosSettings
 

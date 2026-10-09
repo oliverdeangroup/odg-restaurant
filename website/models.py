@@ -255,7 +255,8 @@ class SEOSettings(Singleton):
     schema_type = models.CharField(
         max_length=30, default="Restaurant",
         choices=[("Restaurant", "Restaurant"), ("BarOrPub", "Bar or pub"), ("CafeOrCoffeeShop", "Café / coffee shop"),
-                 ("FastFoodRestaurant", "Fast food"), ("Bakery", "Bakery"), ("Winery", "Wine bar")],
+                 ("FastFoodRestaurant", "Fast food"), ("Bakery", "Bakery"), ("Winery", "Wine bar"),
+                 ("Organization", "Company (not a restaurant)")],
     )
     breadcrumbs = models.BooleanField("Breadcrumbs (schema.org)", default=True)
     redirects = models.TextField(blank=True, help_text="One per line: /old-address/ /new-address/ (permanent 301 redirect)")

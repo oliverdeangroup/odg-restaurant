@@ -18,7 +18,7 @@ from finance.models import Expense
 from pos.models import (
     Category, Customer, DayClose, Order, OrderItem, Payment, PosSettings, Product, Reservation, Section, Station, Table, money,
 )
-from website import starter
+from core import demo_site
 from website.models import Appearance, Brand, SEOSettings
 
 R = random.Random(2026)
@@ -39,36 +39,42 @@ STAFF = [
 MENU = [
     ("Beverages/Soft Drinks", "Cola Zero", "5.50", 2, "", ""),
     ("Beverages/Soft Drinks", "Coca-Cola", "5.50", 2, "", ""),
-    ("Beverages/Soft Drinks", "Fresh lemonade", "7.00", 4, "*Ice: With ice | No ice", "Homemade with lime and mint"),
-    ("Beverages/Soft Drinks", "Passion fruit juice", "8.00", 3, "", "Fresh tropical juice"),
+    ("Beverages/Soft Drinks", "Homemade lemonade", "7.00", 4, "*Ice: With ice | No ice", "Fresh lime, mint and cane sugar"),
+    ("Beverages/Soft Drinks", "Sweet tea", "6.00", 2, "*Sugar: Sweet | Unsweetened", "Southern style iced tea"),
     ("Beverages/Soft Drinks", "Mineral water", "4.50", 1, "*Type: Still | Sparkling", ""),
-    ("Beverages/Alcohol/Cocktails", "Long Island", "18.00", 6, "", "Vodka, gin, rum, tequila, triple sec and cola"),
-    ("Beverages/Alcohol/Cocktails", "Blue Curaçao Lagoon", "16.00", 5, "", "Our signature cocktail with Blue Curaçao"),
+    ("Beverages/Alcohol/Cocktails", "Smoky Old Fashioned", "17.00", 5, "", "Bourbon, smoked maple, orange bitters"),
+    ("Beverages/Alcohol/Cocktails", "Bourbon Sour", "15.00", 5, "", "Bourbon, lemon, foam"),
+    ("Beverages/Alcohol/Cocktails", "Blue Curaçao Lagoon", "16.00", 5, "", "Our island cocktail with Blue Curaçao"),
     ("Beverages/Alcohol/Cocktails", "Mojito", "15.00", 5, "Sugar: Normal | Less sweet", "Rum, mint, lime and soda"),
-    ("Beverages/Alcohol/Cocktails", "Piña Colada", "15.00", 5, "", "Rum, coconut and pineapple"),
     ("Beverages/Alcohol/Beer", "Polar", "6.50", 1, "", "Local favourite"),
     ("Beverages/Alcohol/Beer", "Amstel Bright", "6.50", 1, "", ""),
+    ("Beverages/Alcohol/Beer", "Smoke Ale (craft)", "9.50", 1, "", "Amber ale brewed for barbecue"),
     ("Beverages/Alcohol/Wine", "House wine (glass)", "11.00", 1, "*Colour: Red | White | Rosé", ""),
     ("Beverages/Coffee & Tea", "Espresso", "4.50", 2, "", ""),
     ("Beverages/Coffee & Tea", "Cappuccino", "6.00", 3, "Milk: Regular | Oat", ""),
-    ("Food/Appetizers", "Onion Rings", "11.00", 8, "", "Crispy, with garlic dip"),
-    ("Food/Appetizers", "Pastechi trio", "12.50", 8, "", "Cheese, chicken and beef"),
-    ("Food/Appetizers", "Fish soup", "14.00", 6, "", "Caribbean style with fresh fish"),
-    ("Food/Appetizers", "Caesar salad", "15.00", 7, "Extra: None | Chicken | Shrimps", ""),
-    ("Food/Main Course/Meat", "Pepper Steak", "42.00", 18, "*Doneness: Rare | Medium rare | Medium | Well done\n*Side: Fries | Rice | Funchi | Salad", "Tenderloin with green pepper sauce"),
-    ("Food/Main Course/Meat", "Keshi yená", "34.00", 16, "*Side: Rice | Funchi | Fries", "Traditional stuffed cheese with chicken"),
-    ("Food/Main Course/Meat", "BBQ ribs", "36.00", 17, "*Side: Fries | Rice | Salad", "Slow cooked, island BBQ sauce"),
-    ("Food/Main Course/Meat", "Chicken satay", "29.00", 14, "*Side: Fries | Rice", "With peanut sauce"),
-    ("Food/Main Course/Fish", "Catch of the day", "44.00", 18, "*Preparation: Grilled | Fried\n*Side: Funchi | Rice | Fries", "Fresh local fish, creole sauce"),
-    ("Food/Main Course/Fish", "Garlic shrimps", "39.00", 14, "*Side: Rice | Fries | Salad", ""),
-    ("Food/Main Course/Vegetarian", "Pasta primavera", "27.00", 14, "*Pasta: Penne | Spaghetti | Tagliatelle", "Seasonal vegetables, parmesan"),
-    ("Food/Main Course/Vegetarian", "Veggie curry", "26.00", 15, "*Spice: Mild | Medium | Hot", "Coconut curry with rice"),
+    ("Food/Appetizers", "Smoked wings", "16.00", 9, "*Sauce: Original BBQ | Hot | Honey chipotle", "8 wings, smoked and fried crispy"),
+    ("Food/Appetizers", "Fried pickles", "11.00", 7, "", "With ranch dip"),
+    ("Food/Appetizers", "Brisket nachos", "18.00", 8, "", "Chopped brisket, cheese, jalapeños, sour cream"),
+    ("Food/Appetizers", "Corn ribs", "12.00", 8, "", "Spiced corn with lime butter"),
+    ("Food/Main Course/Meat", "Baby back ribs", "38.00", 15, "*Size: Half rack | Full rack\n*Side: Fries | Mac & cheese | Coleslaw | Funchi fries", "Smoked 6 hours, glazed with our house sauce"),
+    ("Food/Main Course/Meat", "Smoked brisket", "42.00", 12, "*Cut: Lean | Fatty | Mixed\n*Side: Fries | Mac & cheese | Coleslaw | Cornbread", "Smoked 14 hours over local wood"),
+    ("Food/Main Course/Meat", "Pulled pork sandwich", "26.00", 10, "*Side: Fries | Coleslaw | Salad", "Brioche bun, slaw and pickles"),
+    ("Food/Main Course/Meat", "Dino platter (for 2)", "85.00", 18, "*Sauce: Original BBQ | Hot | Mixed", "Ribs, brisket, pulled pork, chicken and two sides"),
+    ("Food/Main Course/Meat", "Smoked half chicken", "29.00", 14, "*Side: Fries | Mac & cheese | Coleslaw | Funchi fries", "Brined and smoked, crispy skin"),
+    ("Food/Main Course/Meat", "Dino burger", "28.00", 12, "*Doneness: Medium rare | Medium | Well done\nExtra: None | Bacon | Pulled pork", "Brisket blend, cheddar, smoked onions"),
+    ("Food/Main Course/Fish", "Smoked salmon plate", "36.00", 10, "*Side: Coleslaw | Salad | Fries", "Cold-smoked salmon, lemon dill sauce"),
+    ("Food/Main Course/Fish", "Grilled shrimp skewers", "34.00", 11, "*Side: Funchi fries | Salad | Fries", "Garlic and chilli butter"),
+    ("Food/Main Course/Vegetarian", "Smoked jackfruit sandwich", "24.00", 10, "*Side: Fries | Coleslaw | Salad", "Pulled jackfruit in BBQ sauce"),
+    ("Food/Main Course/Vegetarian", "BBQ cauliflower steak", "25.00", 12, "*Spice: Mild | Medium | Hot", "With chimichurri"),
+    ("Food/Side Dish", "Mac & cheese", "8.00", 6, "", "Three-cheese, baked"),
+    ("Food/Side Dish", "Cornbread", "6.00", 4, "", "With honey butter"),
+    ("Food/Side Dish", "Coleslaw", "5.50", 3, "", ""),
     ("Food/Side Dish", "Fries", "6.00", 6, "", ""),
     ("Food/Side Dish", "Funchi fries", "7.00", 7, "", "Crispy cornmeal fries"),
-    ("Food/Side Dish", "Fried plantain", "6.50", 6, "", ""),
-    ("Food/Desserts", "Quesillo", "11.00", 4, "", "Caribbean caramel flan"),
-    ("Food/Desserts", "Chocolate lava cake", "13.00", 9, "Ice cream: Vanilla | Coconut | None", ""),
-    ("Food/Desserts", "Bolo di cashupete", "12.00", 4, "", "Local cashew cake"),
+    ("Food/Side Dish", "BBQ beans", "6.50", 4, "", "Slow-cooked with brisket ends"),
+    ("Food/Desserts", "Banana pudding", "11.00", 3, "", "Vanilla wafers, whipped cream"),
+    ("Food/Desserts", "Pecan pie", "12.00", 4, "Ice cream: Vanilla | Coconut | None", ""),
+    ("Food/Desserts", "Quesillo", "10.00", 3, "", "Caribbean caramel flan"),
 ]
 
 FIRST = ["Anna", "Mark", "Sophie", "Ricardo", "Elena", "Tom", "Lisa", "Carlos", "Mila", "Jorge", "Eva", "Daan", "Sara",
@@ -100,26 +106,25 @@ def seed():
     s.session_timeout_minutes = 0
     s.save()
     b = Brand.load()
-    b.name, b.short_name, b.motto = "Seaside Grill", "Seaside Grill", "Fresh food, island flavours"
-    b.address, b.city, b.country = "Penstraat 12", "Willemstad", "Curaçao"
-    b.phone, b.whatsapp, b.email = "+599 9 461 0000", "+599 9 461 0000", "hello@seaside-grill.example"
+    b.name, b.short_name, b.motto = "Dinosaur BBQ", "Dinosaur BBQ", "Low & slow barbecue in Curaçao"
+    b.address, b.city, b.country = "Pietermaai 21 (demo address)", "Willemstad", "Curaçao"
+    b.phone, b.whatsapp, b.email = "+599 9 000 0000", "+599 9 000 0000", "hello@dinosaur-bbq.example"
     b.opening_hours = "Mon–Sun 12:00 – 22:00"
+    b.cuisine, b.price_range = "Barbecue, American, Caribbean", "$$"
     b.save()
     ps = PosSettings.load()
     ps.crib_number, ps.kvk_number = "DEMO-123456", "DEMO-98765"
     ps.opening_hours = {str(d): ["12:00", "22:00"] for d in range(7)}
     ps.min_hours_ahead = 1
     ps.save()
-    look = Appearance.load()
-    look.theme = "bistro"
-    look.save()
+    demo_site.style(Appearance.load())
     SEOSettings.load()
 
     # ---------------------------------------------------------- staff
     users = {}
     for username, first, last, role in STAFF:
         u = User(username=username, first_name=first, last_name=last, role=role, language="",
-                 email=f"{username.replace('demo.', '')}@seaside-grill.example")
+                 email=f"{username.replace('demo.', '')}@dinosaur-bbq.example")
         u.set_unusable_password()
         u.save()
         users[username] = u
@@ -357,37 +362,37 @@ def seed():
 
     luis = users["demo.waiter"]
     live(2, 58, 2, luis, [
-        ("Polar", 1, "served", 55, [], ""), ("House wine (glass)", 2, "served", 55, ["Colour: White"], ""),
-        ("Catch of the day", 1, "served", 50, ["Preparation: Grilled", "Side: Funchi"], ""),
-        ("Pasta primavera", 2, "served", 50, ["Pasta: Penne"], ""), ("Quesillo", 0, "served", 20, [], ""),
+        ("Polar", 1, "served", 55, [], ""), ("House wine (glass)", 2, "served", 55, ["Colour: Red"], ""),
+        ("Smoked brisket", 1, "served", 50, ["Cut: Fatty", "Side: Mac & cheese"], ""),
+        ("Smoked jackfruit sandwich", 2, "served", 50, ["Side: Coleslaw"], ""), ("Banana pudding", 0, "served", 20, [], ""),
     ], status=Order.Status.BILLING, customer=customers[3])
     o4 = live(4, 28, 4, luis, [
-        ("Blue Curaçao Lagoon", 1, "served", 26, [], ""), ("Mojito", 2, "served", 26, ["Sugar: Less sweet"], ""),
-        ("Coca-Cola", 3, "served", 26, [], ""), ("Fresh lemonade", 4, "served", 26, ["Ice: No ice"], ""),
-        ("Pepper Steak", 1, "preparing", 16, ["Doneness: Medium rare", "Side: Fries"], ""),
-        ("Pepper Steak", 2, "preparing", 16, ["Doneness: Well done", "Side: Salad"], "Sauce on the side"),
-        ("Keshi yená", 3, "queued", 16, ["Side: Funchi"], ""), ("Garlic shrimps", 4, "queued", 16, ["Side: Rice"], "No garlic butter, allergy"),
+        ("Smoky Old Fashioned", 1, "served", 26, [], ""), ("Mojito", 2, "served", 26, ["Sugar: Less sweet"], ""),
+        ("Coca-Cola", 3, "served", 26, [], ""), ("Homemade lemonade", 4, "served", 26, ["Ice: No ice"], ""),
+        ("Baby back ribs", 1, "preparing", 16, ["Size: Full rack", "Side: Fries"], ""),
+        ("Dino burger", 2, "preparing", 16, ["Doneness: Medium rare", "Extra: Bacon"], "Sauce on the side"),
+        ("Smoked half chicken", 3, "queued", 16, ["Side: Funchi fries"], ""), ("Grilled shrimp skewers", 4, "queued", 16, ["Side: Salad"], "No butter, allergy"),
     ], customer=customers[0])
     live(5, 9, 3, luis, [
-        ("Long Island", 1, "queued", 3, [], ""), ("Piña Colada", 2, "queued", 3, [], ""), ("Mineral water", 3, "queued", 3, ["Type: Sparkling"], ""),
-        ("Onion Rings", 0, "queued", 3, [], ""), ("Pastechi trio", 0, "queued", 3, [], ""),
+        ("Bourbon Sour", 1, "queued", 3, [], ""), ("Blue Curaçao Lagoon", 2, "queued", 3, [], ""), ("Mineral water", 3, "queued", 3, ["Type: Sparkling"], ""),
+        ("Smoked wings", 0, "queued", 3, ["Sauce: Honey chipotle"], ""), ("Fried pickles", 0, "queued", 3, [], ""),
     ])
     live(7, 36, 2, luis, [
-        ("Amstel Bright", 1, "served", 33, [], ""), ("Passion fruit juice", 2, "served", 33, [], ""),
-        ("BBQ ribs", 1, "ready", 20, ["Side: Fries"], ""), ("Veggie curry", 2, "ready", 20, ["Spice: Hot"], ""),
+        ("Amstel Bright", 1, "served", 33, [], ""), ("Sweet tea", 2, "served", 33, ["Sugar: Sweet"], ""),
+        ("Baby back ribs", 1, "ready", 20, ["Size: Half rack", "Side: Coleslaw"], ""), ("BBQ cauliflower steak", 2, "ready", 20, ["Spice: Hot"], ""),
     ])
     live(9, 6, 2, users["demo.waiter2"], [
         ("Cappuccino", 1, "ready", 6, ["Milk: Oat"], ""), ("Espresso", 2, "ready", 6, [], ""),
     ])
     live(11, 34, 4, users["demo.waiter2"], [
-        ("Polar", 1, "served", 31, [], ""), ("Polar", 2, "served", 31, [], ""), ("Coca-Cola", 3, "served", 31, [], ""), ("Cola Zero", 4, "served", 31, [], ""),
-        ("Chicken satay", 1, "queued", 27, ["Side: Rice"], ""), ("Catch of the day", 2, "preparing", 27, ["Preparation: Fried", "Side: Rice"], ""),
-        ("Caesar salad", 3, "queued", 27, ["Extra: Chicken"], ""), ("Funchi fries", 0, "queued", 27, [], ""),
+        ("Polar", 1, "served", 31, [], ""), ("Smoke Ale (craft)", 2, "served", 31, [], ""), ("Coca-Cola", 3, "served", 31, [], ""), ("Cola Zero", 4, "served", 31, [], ""),
+        ("Pulled pork sandwich", 1, "queued", 27, ["Side: Fries"], ""), ("Smoked brisket", 2, "preparing", 27, ["Cut: Lean", "Side: Cornbread"], ""),
+        ("Dino burger", 3, "queued", 27, ["Doneness: Well done", "Extra: None"], ""), ("Mac & cheese", 0, "queued", 27, [], ""),
     ])
     live(13, 14, 5, users["demo.waiter3"], [
         ("Mojito", 1, "ready", 12, [], ""), ("Mojito", 2, "ready", 12, [], ""), ("House wine (glass)", 3, "queued", 4, ["Colour: Red"], ""),
         ("House wine (glass)", 4, "queued", 4, ["Colour: Red"], ""), ("Mineral water", 5, "queued", 4, ["Type: Still"], ""),
-        ("Fish soup", 0, "preparing", 8, [], ""),
+        ("Dino platter (for 2)", 0, "preparing", 8, ["Sauce: Mixed"], ""),
     ])
     # Order codes of the live tables (YYYYMMDDHH + table)
     for o in Order.objects.filter(code__startswith="live"):
@@ -405,11 +410,11 @@ def seed():
         Reservation.objects.create(customer=customers[cust], table=tables[tno], start=now + timedelta(minutes=mins), guests=g,
                                    status="confirmed", source=R.choice(["website", "phone"]), created_at=now - timedelta(days=1))
     # Notifications for the demo waiter (items ready to pick up)
-    Notification.objects.create(recipient=luis, title="Table 7: ready to pick up", message="1× BBQ ribs, 1× Veggie curry",
+    Notification.objects.create(recipient=luis, title="Table 7: ready to pick up", message="1× Baby back ribs, 1× BBQ cauliflower steak",
                                 link=f"/dashboard/pos/order/{tables[7].pk}/", category="pickup", created_at=ago(1))
     Notification.objects.create(recipient=manager, title="New online reservation: Ricardo Gomez", message="4 · today",
                                 link="/dashboard/pos/reservations/", category="reservation", created_at=ago(30))
 
     # ---------------------------------------------------------- website
-    starter.create(b.name)
+    demo_site.create()
     return now

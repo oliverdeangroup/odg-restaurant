@@ -9,10 +9,10 @@ MENU = [
         ("Home", "core:home", "home"),
     ]),
     ("POS", "pos", [
+        ("Live overview", "pos:overview", "pos_overview"),
         ("Take orders", "pos:tables", "pos_waiter"),
         ("Bar", "pos:bar", "pos_bar"),
         ("Kitchen", "pos:kitchen", "pos_kitchen"),
-        ("Live overview", "pos:overview", "pos_overview"),
         ("Cassa", "pos:cassa", "cassa"),
         ("Order history", "pos:history", "history"),
         ("Products", "pos:products", "products"),
@@ -35,9 +35,8 @@ MENU = [
         ("Media", "website:media", "website"),
     ]),
     ("Users", "users", [
-        ("System", "core:users_system", "users_system"),
-        ("User", "core:users_staff", "users_staff"),
-        ("Customer", "pos:customers", "customers"),
+        ("Employees", "core:employees", "users_staff"),
+        ("Customers", "pos:customers", "customers"),
     ]),
     ("Settings", "settings", [
         ("Settings", "core:settings", "settings"),
